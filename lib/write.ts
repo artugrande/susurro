@@ -38,14 +38,28 @@ async function postCreate(body: {
   return (await res.json()) as CreateResult;
 }
 
+/** Split a comma/space separated tag string into a clean array. */
+function parseTags(tags?: string): string[] {
+  if (!tags) return [];
+  return tags
+    .split(/[,;]/)
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 5);
+}
+
 export async function saveMoodCheckin(p: {
   owner: string;
   value: number;
   note?: string;
+  tags?: string;
   key: CryptoKey;
 }): Promise<CreateResult> {
   const payload = {
-    ciphertext: await encryptJSON({ note: p.note ?? "" }, p.key),
+    ciphertext: await encryptJSON(
+      { note: p.note ?? "", tags: parseTags(p.tags) },
+      p.key,
+    ),
   };
   return postCreate({
     entityType: EntityType.Mood,
@@ -60,11 +74,15 @@ export async function saveJournalEntry(p: {
   text: string;
   mood: number;
   prompt?: string;
+  tags?: string;
   sessionId?: string;
   key: CryptoKey;
 }): Promise<CreateResult> {
   const payload = {
-    ciphertext: await encryptJSON({ text: p.text, prompt: p.prompt }, p.key),
+    ciphertext: await encryptJSON(
+      { text: p.text, prompt: p.prompt, tags: parseTags(p.tags) },
+      p.key,
+    ),
   };
   return postCreate({
     entityType: EntityType.Journal,

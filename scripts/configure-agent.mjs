@@ -31,6 +31,7 @@ Tu forma de acompañar:
 - Sos PROACTIVO: temprano en la charla, preguntá cómo viene su día y pedile que le ponga un número del 1 al 10 ("¿del 1 al 10, cómo dirías que viene tu día?"). No esperes a que lo diga sola.
 - Cuando la persona te dé un número de ánimo (1 a 10), guardalo con save_mood Y avisale en voz alta que lo registrás (ej: "lo anoto" / "queda guardado"). Nunca guardes en silencio.
 - Si cuenta algo significativo, ofrecé guardarlo: "¿querés que lo deje en tu diario?". Si acepta, usá save_journal y confirmá en voz alta.
+- Siempre que guardes (save_mood o save_journal), incluí 2 a 4 "tags" cortos —temas de una o dos palabras: trabajo, sueño, familia, ansiedad, ejercicio, pareja…— separados por coma. Sirven para agrupar después en "lo que te preocupa" y "lo que te hace bien".
 
 Importante sobre las herramientas: cuando vayas a usar una herramienta, SIEMPRE decí algo breve antes y después (ej: "dejame anotarlo"... "listo, quedó"). Nunca te quedes en silencio mientras se ejecuta.
 
@@ -62,6 +63,11 @@ const TOOLS = [
       properties: {
         value: { type: "number", description: "Ánimo de 1 (muy mal) a 10 (muy bien)" },
         note: { type: "string", description: "Nota corta opcional sobre el ánimo" },
+        tags: {
+          type: "string",
+          description:
+            "2 a 4 temas cortos (una o dos palabras) separados por coma: ej. 'trabajo, sueño, familia'",
+        },
       },
       required: ["value"],
     },
@@ -77,6 +83,11 @@ const TOOLS = [
       properties: {
         text: { type: "string", description: "El texto de la entrada de diario" },
         mood: { type: "number", description: "Ánimo asociado, 1 a 10" },
+        tags: {
+          type: "string",
+          description:
+            "2 a 4 temas cortos (una o dos palabras) separados por coma: ej. 'trabajo, sueño, familia'",
+        },
       },
       required: ["text", "mood"],
     },

@@ -13,6 +13,7 @@ export interface MyEntry {
   type: "mood" | "journal";
   mood: number;
   summary: string;
+  tags: string[];
   created: number;
 }
 
@@ -28,10 +29,17 @@ export async function getMyEntries(
   const out: MyEntry[] = [];
   for (const e of moods) {
     let note = "";
+    let tags: string[] = [];
     try {
       const p = JSON.parse(e.payload) as { ciphertext?: string };
-      if (p.ciphertext)
-        note = (await decryptJSON<{ note: string }>(p.ciphertext, key)).note;
+      if (p.ciphertext) {
+        const dec = await decryptJSON<{ note?: string; tags?: string[] }>(
+          p.ciphertext,
+          key,
+        );
+        note = dec.note ?? "";
+        tags = dec.tags ?? [];
+      }
     } catch {
       /* skip */
     }
@@ -40,15 +48,23 @@ export async function getMyEntries(
       type: "mood",
       mood: Number(e.attributes.value ?? 0),
       summary: note,
+      tags,
       created: Number(e.attributes.created ?? 0),
     });
   }
   for (const e of journals) {
     let text = "";
+    let tags: string[] = [];
     try {
       const p = JSON.parse(e.payload) as { ciphertext?: string };
-      if (p.ciphertext)
-        text = (await decryptJSON<{ text: string }>(p.ciphertext, key)).text;
+      if (p.ciphertext) {
+        const dec = await decryptJSON<{ text?: string; tags?: string[] }>(
+          p.ciphertext,
+          key,
+        );
+        text = dec.text ?? "";
+        tags = dec.tags ?? [];
+      }
     } catch {
       /* skip */
     }
@@ -57,6 +73,7 @@ export async function getMyEntries(
       type: "journal",
       mood: Number(e.attributes.mood ?? 0),
       summary: text,
+      tags,
       created: Number(e.attributes.created ?? 0),
     });
   }

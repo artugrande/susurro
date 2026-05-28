@@ -96,6 +96,7 @@ export function Conversation() {
           owner,
           value: Number(p.value),
           note: typeof p.note === "string" ? p.note : undefined,
+          tags: typeof p.tags === "string" ? p.tags : undefined,
           key,
         });
         return "Listo, guardé tu registro de ánimo cifrado en Arkiv.";
@@ -106,6 +107,7 @@ export function Conversation() {
           owner,
           text: String(p.text ?? ""),
           mood: Number(p.mood ?? 5),
+          tags: typeof p.tags === "string" ? p.tags : undefined,
           sessionId,
           key,
         });
