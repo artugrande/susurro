@@ -6,7 +6,7 @@ Proyecto para el track **Arkiv × Puna Tech 2026** (Aplicaciones de IA sobre Ark
 
 - **Equipo:** solo — [@artugrande](https://github.com/artugrande)
 - **Track:** Arkiv Network — IA + datos verificables
-- **Demo en vivo:** _(por publicar)_
+- **Demo en vivo:** https://susurro-nine.vercel.app
 - **Video:** _(por publicar)_
 
 ---
