@@ -2,6 +2,7 @@
 
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ConversationProvider } from "@elevenlabs/react";
 import { useState, type ReactNode } from "react";
 import { wagmiConfig } from "@/lib/wagmi";
 import { SessionProvider } from "@/lib/session";
@@ -11,7 +12,9 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <ConversationProvider>{children}</ConversationProvider>
+        </SessionProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

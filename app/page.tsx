@@ -1,4 +1,4 @@
-import { ConnectButton } from "@/components/connect-button";
+import { Experience } from "@/components/experience";
 
 export default function Home() {
   return (
@@ -30,7 +30,7 @@ export default function Home() {
       </p>
 
       <div className="mt-10">
-        <ConnectButton />
+        <Experience />
       </div>
 
       <footer className="absolute inset-x-0 bottom-6 px-6">
