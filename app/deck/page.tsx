@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { PresenceBlob } from "@/components/presence-blob";
 
 /* ---------- slide building blocks ---------- */
 
@@ -60,11 +61,14 @@ const slides: ReactNode[] = [
     key="title"
     className="flex h-full flex-col items-center justify-center text-center"
   >
-    {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img src="/logosusurro.svg" alt="Susurro" className="mb-6 h-28 w-auto" />
-    <h1 className="text-5xl font-semibold tracking-tight text-foreground sm:text-7xl">
-      Susurro
-    </h1>
+    <PresenceBlob state="idle" className="h-44 w-44" />
+    <div className="mt-3 flex items-center gap-3">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logosusurro.svg" alt="" className="h-10 w-auto" />
+      <span className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+        Susurro
+      </span>
+    </div>
     <p className="mt-5 max-w-xl text-pretty text-lg text-sand">
       Un coach de bienestar con voz. Tu memoria vive cifrada — y es tuya.
     </p>
@@ -77,14 +81,33 @@ const slides: ReactNode[] = [
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/arkivwhite.png" alt="Arkiv" className="h-4 w-auto" />
     </div>
-    <p className="mt-3 text-xs text-muted/70">Arkiv × Puna Tech 2026</p>
+    <p className="mt-3 text-xs text-muted/70">Puna Tech 2026</p>
   </div>,
 
-  // 1 — Problem
+  // 1 — Salta / loneliness
+  <Slide key="salta" kicker="Por qué importa" title="Salta tiene una de las tasas de suicidio más altas de Argentina.">
+    <div className="grid gap-4 sm:grid-cols-2">
+      <Stat big="2×" small="Salta duplica el promedio nacional: 13,5 vs 6,7 suicidios por 100.000 hab. (2022)" />
+      <Stat big="65%" small="De los intentos en la provincia son de jóvenes de 19 a 29 años" />
+    </div>
+    <ul className="space-y-3">
+      <Bullet>
+        La <span className="text-sand">soledad y el aislamiento social</span> son
+        factores de riesgo reconocidos — la OMS declaró la soledad una amenaza
+        para la salud global (2023).
+      </Bullet>
+      <Bullet>
+        Falta un espacio íntimo, sin juicio y disponible siempre para hablar de
+        cómo uno se siente.
+      </Bullet>
+    </ul>
+  </Slide>,
+
+  // 2 — Problem
   <Slide key="problem" kicker="El problema" title="La gente ya usa la IA como terapeuta. Pero tiene que elegir: privacidad o memoria.">
     <div className="grid gap-4 sm:grid-cols-2">
       <Stat big="#1" small="Uso de IA generativa en 2025: “Terapia y compañía” (Harvard Business Review)" />
-      <Stat big="31%" small="De todo el uso de IA — casi el doble que en 2024 (17%)" />
+      <Stat big="−30%" small="Hacer journaling a diario de cómo te sentís baja los síntomas de depresión en 8 semanas (escritura expresiva)" />
     </div>
     <ul className="space-y-3">
       <Bullet>
@@ -119,10 +142,9 @@ const slides: ReactNode[] = [
   // 3 — How it works
   <Slide key="how" kicker="Cómo funciona" title="Voz que entiende, memoria que es tuya.">
     <div className="rounded-2xl border border-white/10 bg-black/20 p-5 font-mono text-sm leading-relaxed text-foreground/90">
-      🎙️ hablás
-      <br />→ ElevenLabs (voz + el agente decide una acción)
+      ElevenLabs recibe y transcribe tu audio
       <br />→ se cifra en tu navegador
-      <br />→ Arkiv guarda el dato (la app paga el gas, vos no)
+      <br />→ Arkiv guarda el dato (la app paga el gas fee, vos no)
       <br />→ el coach te responde por voz
     </div>
     <p className="text-sm text-muted">Stack</p>
@@ -154,14 +176,10 @@ const slides: ReactNode[] = [
         elimina del estado y se poda. Y siempre fue ciphertext.
       </Bullet>
     </ul>
-    <p className="text-sm text-muted">
-      No IPFS (descargás todo o nada) · no Postgres (centralizado, sin
-      verificabilidad).
-    </p>
   </Slide>,
 
   // 5 — Tracks
-  <Slide key="tracks" kicker="Arkiv × Puna Tech" title="Cosemos las tres verticales del track.">
+  <Slide key="tracks" kicker="Arkiv × Puna Tech" title="Unimos las tres verticales del track.">
     <ul className="space-y-3">
       <Bullet>
         <b className="text-sand">Memoria de IA que es tuya</b> — el contexto del
@@ -179,66 +197,76 @@ const slides: ReactNode[] = [
   </Slide>,
 
   // 6 — Business model
-  <Slide key="biz" kicker="Modelo de negocio" title="Suscripción por minutos + overage.">
+  <Slide key="biz" kicker="Modelo de negocio" title="El plan cubre el costo de voz y deja ganancia desde el día cero.">
     <p className="text-sm text-muted">
-      Costo real: ~$0.08–0.10 / minuto de voz (95% off en silencios). El gas de
-      Arkiv es despreciable.
+      El único costo real es la voz: ~$0.06 por minuto (con 95% off en los
+      silencios de una charla reflexiva). El gas de Arkiv es despreciable.
     </p>
     <div className="overflow-hidden rounded-2xl border border-white/10 text-sm">
       <table className="w-full">
         <thead>
           <tr className="bg-white/5 text-xs text-muted">
             <th className="px-3 py-2 text-left font-normal">Plan</th>
+            <th className="px-3 py-2 text-left font-normal">Uso</th>
             <th className="px-3 py-2 text-left font-normal">Precio</th>
-            <th className="px-3 py-2 text-left font-normal">Incluye</th>
-            <th className="px-3 py-2 text-left font-normal">Overage</th>
+            <th className="px-3 py-2 text-left font-normal">Costo voz</th>
+            <th className="px-3 py-2 text-left font-normal">Ganancia</th>
           </tr>
         </thead>
         <tbody className="text-foreground/90">
           <tr className="border-t border-white/5">
             <td className="px-3 py-2 text-sand">Casual</td>
-            <td className="px-3 py-2">$6.99/mes</td>
-            <td className="px-3 py-2">60 min</td>
-            <td className="px-3 py-2">$0.15/min</td>
+            <td className="px-3 py-2">~2 min/día</td>
+            <td className="px-3 py-2">$6.99</td>
+            <td className="px-3 py-2 text-muted">$3.60</td>
+            <td className="px-3 py-2 text-emerald-300">+$3.39</td>
           </tr>
           <tr className="border-t border-white/5">
             <td className="px-3 py-2 text-sand">Regular</td>
-            <td className="px-3 py-2">$14.99/mes</td>
-            <td className="px-3 py-2">180 min</td>
-            <td className="px-3 py-2">$0.12/min</td>
+            <td className="px-3 py-2">~6 min/día</td>
+            <td className="px-3 py-2">$14.99</td>
+            <td className="px-3 py-2 text-muted">$10.80</td>
+            <td className="px-3 py-2 text-emerald-300">+$4.19</td>
           </tr>
           <tr className="border-t border-white/5">
             <td className="px-3 py-2 text-sand">Power</td>
-            <td className="px-3 py-2">$29.99/mes</td>
-            <td className="px-3 py-2">420 min</td>
-            <td className="px-3 py-2">$0.10/min</td>
+            <td className="px-3 py-2">~14 min/día</td>
+            <td className="px-3 py-2">$29.99</td>
+            <td className="px-3 py-2 text-muted">$25.20</td>
+            <td className="px-3 py-2 text-emerald-300">+$4.79</td>
           </tr>
         </tbody>
       </table>
     </div>
     <p className="text-sm text-muted">
-      V2: cobro en USDC sobre Celo con fee abstraction — el usuario paga sin tocar
-      gas ni tokens nativos.
+      Cada usuario que paga su plan cubre sus minutos de ElevenLabs y deja margen.
+      Rentable por usuario desde el primer mes.
     </p>
   </Slide>,
 
   // 7 — Roadmap & distribution
-  <Slide key="roadmap" kicker="Roadmap & distribución" title="V2: el coach se vuelve un agente on-chain.">
+  <Slide key="roadmap" kicker="V2 · Roadmap" title="V2: empezamos a cobrar por uso, sobre Celo.">
     <ul className="space-y-3">
       <Bullet>
-        <b className="text-sand">Identidad ERC-8004</b>: el coach tiene wallet
-        propia y reputación verificable, derivada de los access logs de Arkiv.
+        <b className="text-sand">Pagos por uso en USDC sobre Celo</b> (x402 + fee
+        abstraction): el usuario paga sin tocar gas ni tokens nativos.
       </Bullet>
       <Bullet>
-        <b className="text-sand">Pagos x402 + fee abstraction</b> en Celo: pago por
-        uso en USDC, sin gas nativo.
+        <b className="text-sand">Distribución vía MiniPay</b>: lanzamos como Mini
+        App, con acceso a <span className="text-sand">+16M de usuarios</span> — un
+        caso de uso masivo para Arkiv.
       </Bullet>
       <Bullet>
-        <b className="text-sand">Distribución vía MiniPay</b>: lanzamos como
-        Mini App, con acceso a <span className="text-sand">+16M de usuarios</span> —
-        un caso de uso masivo para Arkiv.
+        Identidad ERC-8004 del coach: wallet propia + reputación verificable
+        derivada de los access logs de Arkiv.
       </Bullet>
     </ul>
+    <div className="mt-2 flex items-center gap-5 opacity-80">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/celologo.png" alt="Celo" className="h-6 w-auto" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/minipaylogo.png" alt="MiniPay" className="h-6 w-auto" />
+    </div>
   </Slide>,
 
   // 8 — Builder
@@ -248,17 +276,25 @@ const slides: ReactNode[] = [
       <img
         src="/artugrandefounder.jpg"
         alt="Arturo Grande"
-        className="h-20 w-20 rounded-full border border-sand/30 object-cover"
+        className="h-24 w-24 rounded-full border border-sand/30 object-cover"
       />
-      <p className="text-sm text-muted">
-        9 hackathons ganados · podcast +250k repros · fundador de desafia.tech
-      </p>
+      <p className="text-sm text-muted">Salteño 🇦🇷 · en web3 desde 2022</p>
     </div>
     <ul className="space-y-3">
-      <Bullet>En web3 desde 2022. Escaló una fintech de $5M a $65M USD procesados en 3 años.</Bullet>
-      <Bullet>9 hackathons ganados: Celo, Polkadot, ETHGlobal, Avalanche, GenLayer, Worldcoin, Stellar.</Bullet>
-      <Bullet>Podcast de tecnología con +250.000 reproducciones (Spotify + YouTube).</Bullet>
-      <Bullet>Fundador de desafia.tech — educación en programación con IA.</Bullet>
+      <Bullet>
+        Salteño. Escaló una fintech de $5M a $65M USD procesados en 3 años.
+      </Bullet>
+      <Bullet>
+        Lanzó una Mini App web3 con{" "}
+        <b className="text-sand">+1.000 usuarios en 40 países</b>.
+      </Bullet>
+      <Bullet>
+        9 hackathons ganados: Celo, Polkadot, ETHGlobal, Avalanche, GenLayer,
+        Worldcoin, Stellar.
+      </Bullet>
+      <Bullet>
+        Podcast de tecnología +250k reproducciones · fundador de desafia.tech.
+      </Bullet>
     </ul>
   </Slide>,
 
