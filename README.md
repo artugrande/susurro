@@ -36,6 +36,18 @@ Toca las tres verticales del track: memoria de IA propiedad del usuario, procede
 
 ---
 
+## Probar el demo
+
+En [la demo en vivo](https://susurro-nine.vercel.app) (necesitás una wallet tipo MetaMask y micrófono):
+
+1. **Conectar wallet** → **Desbloquear mi espacio** (firmás un mensaje; de esa firma se deriva tu llave de cifrado, que nunca sale del navegador).
+2. *(Opcional)* **Cargar 14 días de datos de ejemplo** para que el coach tenga historial que leer.
+3. **🎙️ Hablar con Susurro** y permitir el micrófono.
+4. Contale cómo estás (*"hoy me siento un 4"*) → guarda tu ánimo cifrado en Arkiv.
+5. Pedile que mire tu historial → te pide permiso → al aceptar, aparece el **chip de acceso con cuenta regresiva**.
+6. **Cortá el acceso** con el botón rojo → el coach pierde el contexto al instante.
+7. **Ver quién leyó qué** → registro público y verificable de cada lectura.
+
 ## Stack técnico
 
 | Capa | Tecnología |
