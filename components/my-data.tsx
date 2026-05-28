@@ -11,6 +11,7 @@ import { EntityType } from "@/lib/arkiv";
 import type { MyEntry } from "@/lib/read";
 import { AuditLog } from "@/components/audit-log";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { MoodTimeline } from "@/components/mood-timeline";
 
 export function MyData({ owner }: { owner: string }) {
   const { encryptionKey } = useSession();
@@ -63,6 +64,8 @@ export function MyData({ owner }: { owner: string }) {
 
   return (
     <div className="w-full text-left">
+      <MoodTimeline entries={entries ?? []} />
+
       <h2 className="text-sm font-medium text-foreground">Mis registros</h2>
       <p className="mb-3 text-xs text-muted">
         Cifrados con tu llave. Solo vos podés leerlos.
