@@ -5,6 +5,7 @@ import { ConnectButton } from "@/components/connect-button";
 import { Conversation } from "@/components/conversation";
 import { GrantChip } from "@/components/grant-chip";
 import { AuditLog } from "@/components/audit-log";
+import { SeedButton } from "@/components/seed-button";
 
 /**
  * Pre-unlock: marketing copy + connect/unlock.
@@ -35,6 +36,7 @@ export function Experience() {
       <GrantChip owner={address} />
       <Conversation />
       <AuditLog owner={address} />
+      <SeedButton />
     </div>
   );
 }
