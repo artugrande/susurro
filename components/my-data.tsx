@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { useMyEntries } from "@/lib/hooks";
 import { deleteEntity, deleteAllData } from "@/lib/write";
@@ -107,9 +108,10 @@ export function MyData({ owner }: { owner: string }) {
                       onClick={() => removeOne(e)}
                       disabled={busy === e.entityKey}
                       title="Eliminar este registro"
-                      className="text-muted transition-colors hover:text-red-400 disabled:opacity-50"
+                      aria-label="Eliminar este registro"
+                      className="inline-flex text-muted transition-colors hover:text-red-400 disabled:opacity-50"
                     >
-                      🗑
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </td>
                 </tr>
@@ -122,9 +124,10 @@ export function MyData({ owner }: { owner: string }) {
       {list.length > 0 && (
         <button
           onClick={() => setConfirmOpen(true)}
-          className="mt-3 text-xs text-red-400 underline underline-offset-4 hover:text-red-300"
+          className="mt-3 inline-flex items-center gap-1.5 text-xs text-red-400 transition-colors hover:text-red-300"
         >
-          🔴 Eliminar todo y revocar el acceso
+          <Trash2 className="h-3.5 w-3.5" />
+          Eliminar todo y revocar el acceso
         </button>
       )}
 
