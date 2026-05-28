@@ -84,14 +84,20 @@ export async function createGrant(p: {
   scope: EntityScope[];
   durationSeconds: number;
 }): Promise<CreateResult> {
+  const now = Date.now();
   return postCreate({
     entityType: EntityType.Grant,
     attributes: buildGrantAttributes({
       owner: p.owner,
       grantee: p.grantee,
       scope: p.scope,
+      durationSeconds: p.durationSeconds,
     }),
-    payload: { scope: p.scope, grantedAt: Date.now() },
+    payload: {
+      scope: p.scope,
+      grantedAt: now,
+      expiresAt: now + p.durationSeconds * 1000,
+    },
     expiresIn: p.durationSeconds,
   });
 }

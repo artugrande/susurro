@@ -19,17 +19,7 @@ export default function Home() {
         Susurro
       </h1>
 
-      <p className="mt-5 max-w-xl text-pretty text-lg leading-relaxed text-sand">
-        Un compañero de IA con voz que te escucha. Lo que le contás vive cifrado
-        y es tuyo — no de una plataforma.
-      </p>
-
-      <p className="mt-3 max-w-md text-pretty text-sm leading-relaxed text-muted">
-        Tu memoria de conversaciones vive en Arkiv. Le das acceso por el tiempo
-        que vos quieras, y lo cortás cuando quieras.
-      </p>
-
-      <div className="mt-10">
+      <div className="mt-8 w-full max-w-md">
         <Experience />
       </div>
 

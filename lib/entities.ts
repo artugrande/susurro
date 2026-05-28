@@ -65,6 +65,7 @@ export const Attr = {
   grantee: "grantee", // coach wallet (placeholder in V1, ERC-8004 in V2)
   coachAddress: "coachAddress", // reserved for V2
   created: "created",
+  expiresAt: "expiresAt",
   mood: "mood",
   value: "value",
   dayOfWeek: "dayOfWeek",
@@ -132,14 +133,17 @@ export function buildGrantAttributes(p: {
   owner: string;
   grantee: string;
   scope: EntityScope[];
+  durationSeconds: number;
 }): ArkivAttribute[] {
+  const now = Date.now();
   return [
     PROJECT_ATTRIBUTE,
     { key: Attr.type, value: EntityType.Grant },
     { key: Attr.owner, value: p.owner.toLowerCase() },
     { key: Attr.grantee, value: p.grantee.toLowerCase() },
     { key: Attr.scope, value: p.scope.join(",") },
-    { key: Attr.created, value: Date.now() },
+    { key: Attr.created, value: now },
+    { key: Attr.expiresAt, value: now + p.durationSeconds * 1000 },
   ];
 }
 
