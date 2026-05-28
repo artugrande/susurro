@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
 import { useSession } from "@/lib/session";
+import { VoiceOrb } from "@/components/voice-orb";
 import {
   saveMoodCheckin,
   saveJournalEntry,
@@ -22,14 +23,35 @@ export function Conversation() {
   const [sessionId] = useState(() => crypto.randomUUID());
   const [error, setError] = useState<string | null>(null);
   const [lastTool, setLastTool] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<
+    { role: "user" | "ai"; text: string }[]
+  >([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const conversation = useConversation({
     onError: (e: unknown) => setError(String(e)),
+    onMessage: (props: { message?: string; source?: string }) => {
+      const text = props?.message;
+      if (!text) return;
+      const role: "user" | "ai" = props.source === "user" ? "user" : "ai";
+      setTranscript((t) => [...t, { role, text }]);
+    },
   });
 
   const status = conversation.status;
   const isConnected = status === "connected";
   const isSpeaking = conversation.isSpeaking;
+  const orbState: "idle" | "listening" | "speaking" = !isConnected
+    ? "idle"
+    : isSpeaking
+      ? "speaking"
+      : "listening";
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [transcript]);
 
   const buildClientTools = useCallback(() => {
     const owner = address as string;
@@ -125,6 +147,7 @@ export function Conversation() {
 
   const start = useCallback(() => {
     setError(null);
+    setTranscript([]);
     try {
       conversation.startSession({
         agentId: AGENT_ID,
@@ -145,21 +168,7 @@ export function Conversation() {
 
   return (
     <div className="flex flex-col items-center gap-5">
-      {/* breathing orb */}
-      <div
-        className={[
-          "relative flex h-36 w-36 items-center justify-center rounded-full",
-          "bg-[radial-gradient(circle,_rgba(203,185,157,0.35),_rgba(203,185,157,0.05))]",
-          isConnected ? "animate-pulse" : "",
-        ].join(" ")}
-      >
-        <div
-          className={[
-            "h-20 w-20 rounded-full bg-sand/80 transition-transform duration-300",
-            isSpeaking ? "scale-110" : "scale-100",
-          ].join(" ")}
-        />
-      </div>
+      <VoiceOrb state={orbState} />
 
       <p className="text-sm text-muted">
         {!isConnected
@@ -173,6 +182,30 @@ export function Conversation() {
         <span className="rounded-full border border-sand/25 px-3 py-1 text-xs text-sand">
           🔒 {lastTool} · Arkiv
         </span>
+      )}
+
+      {isConnected && transcript.length > 0 && (
+        <div
+          ref={scrollRef}
+          className="max-h-44 w-full max-w-md space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/20 p-4 text-left"
+        >
+          {transcript.slice(-8).map((m, i) => (
+            <div key={i}>
+              <span className="text-[0.6rem] uppercase tracking-wider text-muted">
+                {m.role === "user" ? "vos" : "susurro"}
+              </span>
+              <p
+                className={
+                  m.role === "user"
+                    ? "text-sm text-foreground/90"
+                    : "text-sm text-sand"
+                }
+              >
+                {m.text}
+              </p>
+            </div>
+          ))}
+        </div>
       )}
 
       {!isConnected ? (
