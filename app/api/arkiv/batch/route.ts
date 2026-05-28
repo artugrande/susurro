@@ -58,9 +58,15 @@ export async function POST(req: Request) {
     });
 
     const wallet = getWalletClient();
-    await wallet.mutateEntities({ creates });
+    const result = (await wallet.mutateEntities({ creates })) as {
+      txHash?: string;
+    };
 
-    return NextResponse.json({ ok: true, count: creates.length });
+    return NextResponse.json({
+      ok: true,
+      count: creates.length,
+      txHash: result?.txHash,
+    });
   } catch (err) {
     console.error("batch create failed:", err);
     const message = err instanceof Error ? err.message : "batch failed";
