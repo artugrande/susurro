@@ -1,3 +1,5 @@
+import { ConnectButton } from "@/components/connect-button";
+
 export default function Home() {
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6 text-center">
@@ -28,9 +30,7 @@ export default function Home() {
       </p>
 
       <div className="mt-10">
-        <span className="inline-flex items-center rounded-full border border-sand/25 px-4 py-2 text-sm text-sand">
-          En construcción · Puna Tech 2026
-        </span>
+        <ConnectButton />
       </div>
 
       <footer className="absolute inset-x-0 bottom-6 px-6">
