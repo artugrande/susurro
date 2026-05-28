@@ -7,9 +7,8 @@ import { Trash2 } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { useMyEntries } from "@/lib/hooks";
 import { deleteEntity, deleteAllData } from "@/lib/write";
-import { EntityType } from "@/lib/arkiv";
+import { EntityType, APP_WALLET_ADDRESS } from "@/lib/arkiv";
 import type { MyEntry } from "@/lib/read";
-import { AuditLog } from "@/components/audit-log";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { MoodTimeline } from "@/components/mood-timeline";
 
@@ -134,8 +133,20 @@ export function MyData({ owner }: { owner: string }) {
         </button>
       )}
 
-      <div className="mt-4 border-t border-white/5 pt-3">
-        <AuditLog owner={owner} />
+      <div className="mt-4 border-t border-white/5 pt-3 text-xs leading-relaxed text-muted">
+        🔒 Cada registro vive cifrado en Arkiv (testnet BRAGA) — solo tu wallet
+        puede descifrarlo. Cada vez que guardás algo, es una transacción real
+        on-chain.{" "}
+        {APP_WALLET_ADDRESS && (
+          <a
+            href={`https://explorer.braga.hoodi.arkiv.network/address/${APP_WALLET_ADDRESS}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sand underline underline-offset-4 hover:text-foreground"
+          >
+            Ver las transacciones de Susurro en Arkiv ↗
+          </a>
+        )}
       </div>
 
       <ConfirmDialog

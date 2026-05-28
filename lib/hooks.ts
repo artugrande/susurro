@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { queryActiveGrants, queryAccessLog } from "@/lib/entities";
+import { queryActiveGrants } from "@/lib/entities";
 import { getMyEntries } from "@/lib/read";
 
 /** The user's own entries (mood + journal), decrypted with their key. */
@@ -21,15 +21,5 @@ export function useActiveGrants(owner?: string) {
     queryFn: () => queryActiveGrants(owner as string),
     enabled: !!owner,
     refetchInterval: 4000,
-  });
-}
-
-/** Poll the public access log — verifiable record of what the coach read. */
-export function useAccessLog(owner?: string) {
-  return useQuery({
-    queryKey: ["accesslog", owner?.toLowerCase()],
-    queryFn: () => queryAccessLog(owner as string, 50),
-    enabled: !!owner,
-    refetchInterval: 6000,
   });
 }
