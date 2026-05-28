@@ -107,7 +107,7 @@ pnpm dlx tsx -r dotenv/config scripts/validate-entities.ts dotenv_config_path=.e
 
 ## Roadmap V2 — Celo Onchain Agents
 
-El coach adquiere **wallet propia con identidad ERC-8004** verificable y reputación derivada de los access logs públicos de Arkiv. Pagos vía **x402** (HTTP 402) en USDC sobre **Celo** con **fee abstraction** — el usuario paga en USDC sin necesitar gas nativo. Integración con **MiniPay** para mobile-first en LATAM. Cada conversación se vuelve un evento económico verificable que construye la reputación on-chain del agente.
+En V2 empezamos a cobrar por uso: pagos en **USDT sobre Celo** vía **x402** (HTTP 402) con **fee abstraction** — el usuario paga sin necesitar gas ni tokens nativos. El coach adquiere **wallet propia con identidad ERC-8004** verificable y reputación derivada de los access logs públicos de Arkiv. Distribución como Mini App en **MiniPay** (+16M usuarios) para un caso de uso masivo en LATAM.
 
 ---
 

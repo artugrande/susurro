@@ -63,7 +63,7 @@ export function Experience() {
           onClick={() => void enterDemo()}
           className="text-xs text-muted underline underline-offset-4 hover:text-sand"
         >
-          Ver demo (datos de ejemplo, sin wallet)
+          Entrar como invitado
         </button>
       </div>
     );
@@ -73,7 +73,7 @@ export function Experience() {
     <div className="flex w-full max-w-md flex-col items-center gap-6 animate-[floatIn_0.5s_ease-out]">
       {demoMode && (
         <div className="text-xs text-muted">
-          Modo demo · datos de ejemplo ·{" "}
+          Cuenta de invitado ·{" "}
           <button
             onClick={exitDemo}
             className="text-sand underline underline-offset-4"

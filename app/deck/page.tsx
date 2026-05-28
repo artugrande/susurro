@@ -35,11 +35,41 @@ function Slide({
   );
 }
 
-function Stat({ big, small }: { big: string; small: string }) {
+function Stat({
+  big,
+  label,
+  small,
+  href,
+}: {
+  big: string;
+  label?: string;
+  small: string;
+  href?: string;
+}) {
   return (
     <div className="rounded-2xl border border-sand/25 bg-sand/5 p-5">
-      <div className="text-3xl font-semibold text-sand">{big}</div>
-      <div className="mt-1 text-sm text-muted">{small}</div>
+      <div className="flex items-baseline gap-2">
+        <div className="text-3xl font-semibold text-sand">{big}</div>
+        {label && (
+          <div className="text-lg font-semibold text-foreground">{label}</div>
+        )}
+      </div>
+      <div className="mt-1 text-sm text-muted">
+        {small}
+        {href && (
+          <>
+            {" · "}
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sand underline underline-offset-2"
+            >
+              fuente
+            </a>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -87,8 +117,16 @@ const slides: ReactNode[] = [
   // 1 — Salta / loneliness
   <Slide key="salta" kicker="Por qué importa" title="Salta tiene una de las tasas de suicidio más altas de Argentina.">
     <div className="grid gap-4 sm:grid-cols-2">
-      <Stat big="2×" small="Salta duplica el promedio nacional: 13,5 vs 6,7 suicidios por 100.000 hab. (2022)" />
-      <Stat big="65%" small="De los intentos en la provincia son de jóvenes de 19 a 29 años" />
+      <Stat
+        big="2×"
+        small="Salta duplica el promedio nacional: 13,5 vs 6,7 suicidios por 100.000 hab."
+        href="https://www.pagina12.com.ar/782016-salta-duplica-el-promedio-nacional-de-suicidios/"
+      />
+      <Stat
+        big="65%"
+        small="De los intentos en la provincia son jóvenes de 19 a 29 años"
+        href="https://www.ahorasalta.com.ar/noticias/salud-17/salta-es-una-de-las-provincias-del-pais-con-mayor-cantidad-de-suicidios-12228"
+      />
     </div>
     <ul className="space-y-3">
       <Bullet>
@@ -106,8 +144,17 @@ const slides: ReactNode[] = [
   // 2 — Problem
   <Slide key="problem" kicker="El problema" title="La gente ya usa la IA como terapeuta. Pero tiene que elegir: privacidad o memoria.">
     <div className="grid gap-4 sm:grid-cols-2">
-      <Stat big="#1" small="Uso de IA generativa en 2025: “Terapia y compañía” (Harvard Business Review)" />
-      <Stat big="−30%" small="Hacer journaling a diario de cómo te sentís baja los síntomas de depresión en 8 semanas (escritura expresiva)" />
+      <Stat
+        big="#1"
+        label="Terapia y compañía"
+        small="Uso de IA generativa en 2025 (Harvard Business Review)"
+        href="https://hbr.org/2025/04/how-people-are-really-using-gen-ai-in-2025"
+      />
+      <Stat
+        big="−30%"
+        small="Hacer journaling a diario baja los síntomas de depresión en 8 semanas (escritura expresiva)"
+        href="https://www.simplypsychology.com/articles/journaling-for-mental-health"
+      />
     </div>
     <ul className="space-y-3">
       <Bullet>
@@ -200,7 +247,7 @@ const slides: ReactNode[] = [
   <Slide key="biz" kicker="Modelo de negocio" title="El plan cubre el costo de voz y deja ganancia desde el día cero.">
     <p className="text-sm text-muted">
       El único costo real es la voz: ~$0.06 por minuto (con 95% off en los
-      silencios de una charla reflexiva). El gas de Arkiv es despreciable.
+      silencios de una charla reflexiva).
     </p>
     <div className="overflow-hidden rounded-2xl border border-white/10 text-sm">
       <table className="w-full">
@@ -248,7 +295,7 @@ const slides: ReactNode[] = [
   <Slide key="roadmap" kicker="V2 · Roadmap" title="V2: empezamos a cobrar por uso, sobre Celo.">
     <ul className="space-y-3">
       <Bullet>
-        <b className="text-sand">Pagos por uso en USDC sobre Celo</b> (x402 + fee
+        <b className="text-sand">Pagos por uso en USDT sobre Celo</b> (x402 + fee
         abstraction): el usuario paga sin tocar gas ni tokens nativos.
       </Bullet>
       <Bullet>
@@ -257,8 +304,8 @@ const slides: ReactNode[] = [
         caso de uso masivo para Arkiv.
       </Bullet>
       <Bullet>
-        Identidad ERC-8004 del coach: wallet propia + reputación verificable
-        derivada de los access logs de Arkiv.
+        <b className="text-sand">Identidad ERC-8004 del coach:</b> wallet propia +
+        reputación verificable derivada de los access logs de Arkiv.
       </Bullet>
     </ul>
     <div className="mt-2 flex items-center gap-5 opacity-80">
@@ -270,17 +317,27 @@ const slides: ReactNode[] = [
   </Slide>,
 
   // 8 — Builder
-  <Slide key="builder" kicker="Sobre el builder" title="Arturo Grande — Product Builder.">
-    <div className="mb-4 flex items-center gap-4">
+  <div
+    key="builder"
+    className="mx-auto flex h-full w-full max-w-3xl flex-col justify-center"
+  >
+    <div className="flex items-center gap-5">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/artugrandefounder.jpg"
         alt="Arturo Grande"
-        className="h-24 w-24 rounded-full border border-sand/30 object-cover"
+        className="h-24 w-24 shrink-0 rounded-full border border-sand/30 object-cover"
       />
-      <p className="text-sm text-muted">Salteño 🇦🇷 · en web3 desde 2022</p>
+      <div>
+        <p className="mb-1 text-xs uppercase tracking-[0.2em] text-sand/70">
+          Sobre el builder
+        </p>
+        <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          Arturo Grande — Product Builder.
+        </h2>
+      </div>
     </div>
-    <ul className="space-y-3">
+    <ul className="mt-6 space-y-4 text-base leading-relaxed text-foreground/90 sm:text-lg">
       <Bullet>
         Salteño. Escaló una fintech de $5M a $65M USD procesados en 3 años.
       </Bullet>
@@ -296,7 +353,7 @@ const slides: ReactNode[] = [
         Podcast de tecnología +250k reproducciones · fundador de desafia.tech.
       </Bullet>
     </ul>
-  </Slide>,
+  </div>,
 
   // 9 — Close
   <div
@@ -306,9 +363,9 @@ const slides: ReactNode[] = [
     {/* eslint-disable-next-line @next/next/no-img-element */}
     <img src="/logosusurro.svg" alt="Susurro" className="mb-6 h-20 w-auto opacity-90" />
     <h2 className="text-4xl font-semibold tracking-tight text-foreground">
-      Tu confianza es tuya.
+      Tu registro emocional es tuyo.
     </h2>
-    <p className="mt-3 text-sand">Gracias.</p>
+    <p className="mt-3 text-sand">Gracias por tu atención.</p>
     <div className="mt-8 flex flex-col gap-2 text-sm">
       <a
         href="https://susurro-nine.vercel.app"
