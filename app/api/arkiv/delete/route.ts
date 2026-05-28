@@ -1,34 +1,39 @@
 import { NextResponse } from "next/server";
 import { getWalletClient } from "@/lib/arkiv";
-import { queryActiveGrants } from "@/lib/entities";
+import { queryByType, ALLOWED_ENTITY_TYPES } from "@/lib/entities";
 
 export const runtime = "nodejs";
 
 interface DeleteBody {
   entityKey?: unknown;
   owner?: unknown;
+  entityType?: unknown;
 }
 
 /**
- * Revoke (delete) an access-grant. To prevent anyone from deleting arbitrary
- * entities, we only allow deleting a grant that actually belongs to the
- * claimed owner (verified by querying the owner's active grants first).
+ * Delete one entity (a grant to revoke, or a mood/journal entry to erase).
+ * We verify the entity actually belongs to the claimed owner before deleting,
+ * so no one can delete another user's data through this endpoint.
  */
 export async function POST(req: Request) {
   try {
-    const { entityKey, owner } = (await req.json()) as DeleteBody;
-    if (typeof entityKey !== "string" || typeof owner !== "string") {
+    const { entityKey, owner, entityType } = (await req.json()) as DeleteBody;
+    if (
+      typeof entityKey !== "string" ||
+      typeof owner !== "string" ||
+      typeof entityType !== "string" ||
+      !ALLOWED_ENTITY_TYPES.includes(entityType)
+    ) {
       return NextResponse.json(
-        { error: "entityKey and owner required" },
+        { error: "entityKey, owner and valid entityType required" },
         { status: 400 },
       );
     }
 
-    const grants = await queryActiveGrants(owner);
-    const found = grants.find((g) => g.entityKey === entityKey);
-    if (!found) {
+    const owned = await queryByType({ owner, entityType, limit: 1000 });
+    if (!owned.find((e) => e.entityKey === entityKey)) {
       return NextResponse.json(
-        { error: "grant not found for this owner" },
+        { error: "entity not found for this owner" },
         { status: 404 },
       );
     }

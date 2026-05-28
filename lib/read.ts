@@ -7,6 +7,62 @@
 import { decryptJSON } from "@/lib/crypto";
 import { queryRecentMood, queryRecentJournal } from "@/lib/entities";
 
+/** A unified, decrypted view of one of the user's entries (for the UI list). */
+export interface MyEntry {
+  entityKey: string;
+  type: "mood" | "journal";
+  mood: number;
+  summary: string;
+  created: number;
+}
+
+/** All of the user's entries (mood + journal), decrypted, newest first. */
+export async function getMyEntries(
+  owner: string,
+  key: CryptoKey,
+): Promise<MyEntry[]> {
+  const [moods, journals] = await Promise.all([
+    queryRecentMood(owner, 3650),
+    queryRecentJournal(owner, 3650),
+  ]);
+  const out: MyEntry[] = [];
+  for (const e of moods) {
+    let note = "";
+    try {
+      const p = JSON.parse(e.payload) as { ciphertext?: string };
+      if (p.ciphertext)
+        note = (await decryptJSON<{ note: string }>(p.ciphertext, key)).note;
+    } catch {
+      /* skip */
+    }
+    out.push({
+      entityKey: e.entityKey,
+      type: "mood",
+      mood: Number(e.attributes.value ?? 0),
+      summary: note,
+      created: Number(e.attributes.created ?? 0),
+    });
+  }
+  for (const e of journals) {
+    let text = "";
+    try {
+      const p = JSON.parse(e.payload) as { ciphertext?: string };
+      if (p.ciphertext)
+        text = (await decryptJSON<{ text: string }>(p.ciphertext, key)).text;
+    } catch {
+      /* skip */
+    }
+    out.push({
+      entityKey: e.entityKey,
+      type: "journal",
+      mood: Number(e.attributes.mood ?? 0),
+      summary: text,
+      created: Number(e.attributes.created ?? 0),
+    });
+  }
+  return out.sort((a, b) => b.created - a.created);
+}
+
 export interface DecryptedMood {
   value: number;
   note: string;

@@ -142,11 +142,33 @@ export async function revokeGrant(p: {
   entityKey: string;
   owner: string;
 }): Promise<{ ok: boolean }> {
+  return deleteEntity({ ...p, entityType: EntityType.Grant });
+}
+
+/** Delete a single entity (entry or grant) owned by the user. */
+export async function deleteEntity(p: {
+  entityKey: string;
+  owner: string;
+  entityType: string;
+}): Promise<{ ok: boolean }> {
   const res = await fetch("/api/arkiv/delete", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(p),
   });
-  if (!res.ok) throw new Error(`revoke failed: ${res.status}`);
+  if (!res.ok) throw new Error(`delete failed: ${res.status}`);
   return (await res.json()) as { ok: boolean };
+}
+
+/** Erase ALL of the user's data and revoke every grant (single batch). */
+export async function deleteAllData(p: {
+  owner: string;
+}): Promise<{ ok: boolean; deleted: number }> {
+  const res = await fetch("/api/arkiv/delete-all", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(p),
+  });
+  if (!res.ok) throw new Error(`delete-all failed: ${res.status}`);
+  return (await res.json()) as { ok: boolean; deleted: number };
 }

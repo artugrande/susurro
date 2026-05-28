@@ -4,7 +4,7 @@ import { useSession } from "@/lib/session";
 import { ConnectButton } from "@/components/connect-button";
 import { Conversation } from "@/components/conversation";
 import { GrantChip } from "@/components/grant-chip";
-import { AuditLog } from "@/components/audit-log";
+import { MyData } from "@/components/my-data";
 import { SeedButton } from "@/components/seed-button";
 
 /**
@@ -35,7 +35,7 @@ export function Experience() {
     <div className="flex w-full max-w-md flex-col items-center gap-6">
       <GrantChip owner={address} />
       <Conversation />
-      <AuditLog owner={address} />
+      <MyData owner={address} />
       <SeedButton />
     </div>
   );
