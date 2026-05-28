@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
 import { useSession } from "@/lib/session";
+import { Mic } from "lucide-react";
 import { PresenceBlob } from "@/components/presence-blob";
 import {
   saveMoodCheckin,
@@ -281,9 +282,10 @@ export function Conversation() {
       {!isConnected ? (
         <button
           onClick={start}
-          className="inline-flex items-center justify-center rounded-full bg-sand px-7 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-sand/90"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-sand px-7 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-sand/90"
         >
-          🎙️ Hablar con Luna
+          <Mic className="h-4 w-4" />
+          Hablar con Luna
         </button>
       ) : (
         <button

@@ -39,6 +39,12 @@ export default function Landing() {
             Ver el pitch
           </Link>
         </div>
+        <Link
+          href="/app?demo=1"
+          className="mt-3 text-xs text-muted underline underline-offset-4 hover:text-sand"
+        >
+          o explorá el demo con datos de ejemplo
+        </Link>
         <div className="mt-10 flex items-center gap-4 opacity-70">
           <span className="text-[0.65rem] uppercase tracking-[0.2em] text-muted">
             Powered by

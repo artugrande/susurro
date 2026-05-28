@@ -47,14 +47,7 @@ export function GrantChip({ owner }: { owner: string }) {
     }
   }
 
-  if (active.length === 0) {
-    return (
-      <div className="flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-xs text-muted">
-        <span className="h-2 w-2 rounded-full bg-muted/50" />
-        Acceso de Susurro: cerrado · nadie lee tu data
-      </div>
-    );
-  }
+  if (active.length === 0) return null;
 
   return (
     <div className="w-full space-y-3">
