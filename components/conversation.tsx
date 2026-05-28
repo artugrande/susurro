@@ -15,6 +15,7 @@ import { COACH_ADDRESS, findActiveGrant } from "@/lib/coach";
 import type { EntityScope } from "@/lib/entities";
 
 const AGENT_ID = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID as string;
+const MAX_SECONDS = 180; // 3-minute check-in
 
 type ToolParams = Record<string, unknown>;
 
@@ -42,11 +43,39 @@ export function Conversation() {
   const status = conversation.status;
   const isConnected = status === "connected";
   const isSpeaking = conversation.isSpeaking;
+
+  // Debounce speaking -> listening so the label/orb don't flicker during the
+  // tiny pauses Luna takes mid-sentence. Switch to speaking instantly; only
+  // drop back to listening after ~1.2s of continuous silence.
+  const [stableSpeaking, setStableSpeaking] = useState(false);
+  useEffect(() => {
+    if (isSpeaking) {
+      setStableSpeaking(true);
+      return;
+    }
+    const t = setTimeout(() => setStableSpeaking(false), 1200);
+    return () => clearTimeout(t);
+  }, [isSpeaking]);
+
   const orbState: "idle" | "listening" | "speaking" = !isConnected
     ? "idle"
-    : isSpeaking
+    : stableSpeaking
       ? "speaking"
       : "listening";
+
+  // 3-minute countdown; auto-ends the session at zero.
+  const [remaining, setRemaining] = useState(MAX_SECONDS);
+  const startedAtRef = useRef(0);
+  useEffect(() => {
+    if (!isConnected) return;
+    const id = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startedAtRef.current) / 1000);
+      const left = Math.max(0, MAX_SECONDS - elapsed);
+      setRemaining(left);
+      if (left <= 0) conversation.endSession();
+    }, 250);
+    return () => clearInterval(id);
+  }, [isConnected, conversation]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -149,6 +178,8 @@ export function Conversation() {
   const start = useCallback(() => {
     setError(null);
     setTranscript([]);
+    startedAtRef.current = Date.now();
+    setRemaining(MAX_SECONDS);
     try {
       conversation.startSession({
         agentId: AGENT_ID,
@@ -169,15 +200,51 @@ export function Conversation() {
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <PresenceBlob state={orbState} className="h-56 w-56" />
+      <div className="relative flex h-60 w-60 items-center justify-center">
+        {isConnected && (
+          <svg
+            viewBox="0 0 240 240"
+            className="pointer-events-none absolute inset-0 -rotate-90"
+          >
+            <circle
+              cx="120"
+              cy="120"
+              r="112"
+              fill="none"
+              stroke="rgba(255,255,255,0.08)"
+              strokeWidth="3"
+            />
+            <circle
+              cx="120"
+              cy="120"
+              r="112"
+              fill="none"
+              stroke="#cbb99d"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={2 * Math.PI * 112}
+              strokeDashoffset={2 * Math.PI * 112 * (1 - remaining / MAX_SECONDS)}
+              className="transition-[stroke-dashoffset] duration-300"
+            />
+          </svg>
+        )}
+        <PresenceBlob state={orbState} className="h-48 w-48" />
+      </div>
 
       <p className="text-sm text-muted">
         {!isConnected
-          ? "Tocá para empezar a hablar"
-          : isSpeaking
-            ? "Susurro está hablando…"
-            : "Te escucho…"}
+          ? "Tocá para empezar tu check-in de 3 minutos"
+          : stableSpeaking
+            ? "Luna está hablando…"
+            : "Luna te escucha…"}
       </p>
+
+      {isConnected && (
+        <p className="font-mono text-xs text-sand">
+          {Math.floor(remaining / 60)}:
+          {String(remaining % 60).padStart(2, "0")} restantes
+        </p>
+      )}
 
       {lastTool && isConnected && (
         <span className="rounded-full border border-sand/25 px-3 py-1 text-xs text-sand">
@@ -214,7 +281,7 @@ export function Conversation() {
           onClick={start}
           className="inline-flex items-center justify-center rounded-full bg-sand px-7 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-sand/90"
         >
-          🎙️ Hablar con Susurro
+          🎙️ Hablar con Luna
         </button>
       ) : (
         <button

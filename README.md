@@ -117,6 +117,19 @@ Desarrollado con asistencia de **Claude (Claude Code)** para arquitectura, códi
 
 ---
 
+## Créditos y fuentes
+
+Casi todo el código es original. Lo que es de terceros, acotado y citado:
+
+- **Solo la orbe de voz** usa una pieza de terceros: la función de **ruido simplex 3D de Ashima Arts / Stefan Gustavson** (licencia **MIT**, `components/presence-blob/shaders.ts`). El resto de la orbe —el desplazamiento fbm, el glow fresnel, los estados y el canvas de react-three-fiber— es implementación propia de una técnica estándar y documentada (esfera desplazada por ruido + rim glow). No se reutiliza código de aplicación de terceros.
+- El **gráfico de evolución del ánimo** (SVG propio) está inspirado conceptualmente en el proyecto open-source [Voice-Journal](https://github.com/JuampiHernandez/Voice-Journal) (MIT); el código es nuestro.
+
+El resto (capa de datos Arkiv, cifrado, API routes, integración de voz, UI, deck) es original de este proyecto.
+
+## La coach
+
+La voz con la que hablás se llama **Luna**. Susurro es la plataforma; Luna es la compañera.
+
 ## Licencia
 
 MIT

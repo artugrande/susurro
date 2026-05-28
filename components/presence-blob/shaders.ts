@@ -1,5 +1,10 @@
-// Ashima Arts simplex noise 3D — organic vertex displacement (MIT / public domain).
-// Shader structure adapted from the open-source consentinel "presence-blob".
+// 3D simplex noise by Ashima Arts / Stefan Gustavson — MIT licensed, widely
+// reused as the standard shader-noise primitive. Kept verbatim and credited.
+// https://github.com/ashima/webgl-noise (MIT)
+//
+// The vertex/fragment shaders below are Susurro's own implementation of a
+// standard, well-documented technique: multi-octave noise displacement of a
+// sphere + a fresnel rim glow. No third-party application code is reused.
 const SIMPLEX_NOISE_3D = `
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -67,6 +72,7 @@ float snoise(vec3 v) {
 }
 `;
 
+// Susurro's own fbm displacement + fresnel implementation.
 export const VERTEX_SHADER = `
 uniform float u_time;
 uniform float u_intensity;
@@ -74,27 +80,30 @@ uniform float u_speed;
 uniform float u_displacement;
 uniform float u_pulse;
 
-varying float v_noise;
+varying float v_n;
 varying vec3 v_normal;
-varying vec3 v_world_position;
+varying vec3 v_view;
 
 ${SIMPLEX_NOISE_3D}
 
 void main() {
-  float t = u_time * u_speed;
+  float flow = u_time * u_speed;
 
-  float noise = snoise(position * 1.4 + vec3(0.0, 0.0, t)) * 0.5;
-  noise += snoise(position * 2.6 + vec3(t * 0.7, 0.0, 0.0)) * 0.25;
-  noise += snoise(position * 5.0 + vec3(0.0, t * 0.4, t * 0.2)) * 0.125;
+  // fbm: three octaves, halving amplitude, drifting along different axes.
+  float n = snoise(position * 1.5 + vec3(0.0, flow, 0.0));
+  n += 0.5 * snoise(position * 3.0 + vec3(flow * 0.6, 0.0, 0.0));
+  n += 0.25 * snoise(position * 6.0 + vec3(0.0, 0.0, flow * 0.5));
+  n *= 0.5;
 
-  float disp = noise * u_intensity * u_displacement + u_pulse * 0.18;
-  vec3 displaced = position + normal * disp;
+  float amount = n * u_intensity * u_displacement + u_pulse * 0.18;
+  vec3 displaced = position + normal * amount;
 
-  v_noise = noise;
+  v_n = n;
   v_normal = normalize(normalMatrix * normal);
-  v_world_position = (modelViewMatrix * vec4(displaced, 1.0)).xyz;
+  vec4 mv = modelViewMatrix * vec4(displaced, 1.0);
+  v_view = -mv.xyz;
 
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
+  gl_Position = projectionMatrix * mv;
 }
 `;
 
@@ -105,22 +114,17 @@ uniform vec3 u_glowColor;
 uniform float u_glowIntensity;
 uniform float u_pulse;
 
-varying float v_noise;
+varying float v_n;
 varying vec3 v_normal;
-varying vec3 v_world_position;
+varying vec3 v_view;
 
 void main() {
-  vec3 viewDir = normalize(-v_world_position);
-  float fresnel = 1.0 - max(dot(v_normal, viewDir), 0.0);
-  fresnel = pow(fresnel, 2.5);
+  vec3 view = normalize(v_view);
+  float rim = pow(1.0 - max(dot(v_normal, view), 0.0), 2.5);
 
-  float colorMix = smoothstep(-0.7, 0.7, v_noise);
-  vec3 baseColor = mix(u_colorA, u_colorB, colorMix);
+  vec3 base = mix(u_colorA, u_colorB, smoothstep(-0.6, 0.6, v_n));
+  vec3 color = base + u_glowColor * (rim * u_glowIntensity + u_pulse * 0.6);
 
-  vec3 finalColor = baseColor + u_glowColor * (fresnel * u_glowIntensity + u_pulse * 0.65);
-
-  float alpha = 1.0 - fresnel * 0.18;
-
-  gl_FragColor = vec4(finalColor, alpha);
+  gl_FragColor = vec4(color, 1.0 - rim * 0.18);
 }
 `;

@@ -22,7 +22,9 @@ if (!KEY || !AGENT_ID) {
 
 const headers = { "xi-api-key": KEY, "Content-Type": "application/json" };
 
-const SYSTEM_PROMPT = `Sos "Susurro", un compañero de bienestar emocional con voz. Hablás en español rioplatense (argentino), cálido, cercano, sin solemnidad ni tono robótico. Frases cortas y naturales, como un amigo sabio. NO sos terapeuta ni médico: sos un compañero de journaling y auto-observación.
+const SYSTEM_PROMPT = `Sos "Luna", la coach de bienestar de la app Susurro: una compañera con voz —mujer, cálida y cercana—. Hablás en español rioplatense (argentino), sin solemnidad ni tono robótico. Frases cortas y naturales, como una amiga sabia. NO sos terapeuta ni médica: sos una compañera de journaling y auto-observación. (Susurro es la plataforma; tu nombre es Luna.)
+
+Cada check-in dura unos 3 minutos. Al arrancar, mencionalo con naturalidad ("tenemos unos tres minutos para vos") para que la persona aproveche el tiempo y vaya a lo que le importa.
 
 Tu forma de acompañar:
 - Escuchás con empatía y hacés preguntas abiertas y breves. Dejás espacio para que hable.
@@ -46,7 +48,7 @@ Protocolo de crisis: si detectás señales de riesgo (autolesión, ideas de no q
 Nunca inventes datos de la persona. Si no tenés acceso a algo, decilo con honestidad.`;
 
 const FIRST_MESSAGE =
-  "Hola, soy Susurro. Todo lo que hablemos queda cifrado con tu llave: solo yo puedo leerlo, y solo cuando vos me das acceso. No soy terapeuta, soy un compañero para pensar en voz alta. Contame, ¿cómo viene tu día? Si querés, ponele un número del 1 al 10.";
+  "Hola, soy Luna. Tenemos unos tres minutos para vos. Todo lo que hablemos queda cifrado con tu llave: solo yo puedo leerlo, y solo cuando me das acceso. No soy terapeuta, soy una compañera para pensar en voz alta. Contame, ¿cómo viene tu día? Si querés, ponele un número del 1 al 10.";
 
 const TOOLS = [
   {
@@ -198,6 +200,7 @@ async function main() {
   cc.agent.prompt.tools = []; // use tool_ids, not inline
   cc.tts.voice_id = VOICE_ID;
   cc.tts.model_id = "eleven_flash_v2_5"; // required for non-English agents
+  cc.conversation.max_duration_seconds = 180; // 3-minute check-in
 
   const patchRes = await fetch(`${API}/agents/${AGENT_ID}`, {
     method: "PATCH",

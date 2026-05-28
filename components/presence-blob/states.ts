@@ -45,17 +45,18 @@ export const STATE_PARAMS: Record<BlobState, BlobStateParams> = {
     driftAmount: 1.1,
     pulseRate: 0,
   },
-  // Coach speaking — warm amber, faster boil, brighter glow, bigger waves.
+  // Coach speaking — warm amber, a touch livelier than listening but calm
+  // (fast motion was distracting). Mostly a color/glow shift, gentle motion.
   speaking: {
-    intensity: 1.0,
-    speed: 1.3,
-    displacement: 0.46,
+    intensity: 0.9,
+    speed: 0.7,
+    displacement: 0.4,
     colorA: c("#f0a868"),
     colorB: c("#cbb99d"),
-    glowColor: c("#f5b878"),
-    glowIntensity: 1.35,
-    rotationSpeed: 0.16,
-    driftAmount: 1.2,
+    glowColor: c("#f3b274"),
+    glowIntensity: 1.05,
+    rotationSpeed: 0.08,
+    driftAmount: 1.1,
     pulseRate: 0,
   },
 };
