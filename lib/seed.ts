@@ -27,21 +27,41 @@ const MOOD_NOTES = [
   "cierre de semana pesado",
 ];
 
+const MOOD_TAGS: string[][] = [
+  ["calma"],
+  ["trabajo", "estrés"],
+  ["sueño"],
+  ["ejercicio", "naturaleza"],
+  ["trabajo", "ansiedad"],
+  ["amigos"],
+  ["domingo", "bajón"],
+  ["ejercicio"],
+  ["familia"],
+  ["rutina"],
+  ["energía"],
+  ["trabajo", "logro"],
+  ["soledad"],
+  ["trabajo", "cansancio"],
+];
+
 const JOURNALS = [
   {
     daysAgo: 11,
     mood: 3,
     text: "Hoy fue un domingo difícil. Me quedé en la cama hasta tarde y sentí que el día se me escapaba. Me cuesta los domingos.",
+    tags: ["domingo", "bajón"],
   },
   {
     daysAgo: 6,
     mood: 7,
     text: "Salí a caminar por el parque y me crucé con una amiga. Charlamos un rato largo. Me di cuenta de que hablar me destraba.",
+    tags: ["amigos", "naturaleza"],
   },
   {
     daysAgo: 2,
     mood: 4,
     text: "Mucha presión con la entrega del trabajo. Siento el cuerpo tenso. Necesito organizar mejor los tiempos.",
+    tags: ["trabajo", "ansiedad"],
   },
 ];
 
@@ -64,8 +84,12 @@ export async function seedDemoData(params: {
     const createdAt = Date.now() - i * DAY;
     const dow = new Date(createdAt).getDay();
     const value = dow === 0 ? 3 + (i % 2) : 5 + (i % 4);
-    const note = MOOD_NOTES[i % MOOD_NOTES.length];
-    const ciphertext = await encryptJSON({ note }, params.key);
+    const idx = i % MOOD_NOTES.length;
+    const note = MOOD_NOTES[idx];
+    const ciphertext = await encryptJSON(
+      { note, tags: MOOD_TAGS[idx] },
+      params.key,
+    );
     items.push({
       entityType: EntityType.Mood,
       attributes: [
@@ -84,7 +108,10 @@ export async function seedDemoData(params: {
   // A few journal entries.
   for (const j of JOURNALS) {
     const createdAt = Date.now() - j.daysAgo * DAY;
-    const ciphertext = await encryptJSON({ text: j.text }, params.key);
+    const ciphertext = await encryptJSON(
+      { text: j.text, tags: j.tags },
+      params.key,
+    );
     items.push({
       entityType: EntityType.Journal,
       attributes: [
