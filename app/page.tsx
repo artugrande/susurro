@@ -39,9 +39,15 @@ export default function Landing() {
             Ver el pitch
           </Link>
         </div>
-        <p className="mt-8 text-xs uppercase tracking-[0.25em] text-muted">
-          Powered by ElevenLabs · Arkiv
-        </p>
+        <div className="mt-10 flex items-center gap-4 opacity-70">
+          <span className="text-[0.65rem] uppercase tracking-[0.2em] text-muted">
+            Powered by
+          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/elevenlogo.png" alt="ElevenLabs" className="h-4 w-auto" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/arkivwhite.png" alt="Arkiv" className="h-4 w-auto" />
+        </div>
       </section>
 
       {/* ---------- problem ---------- */}

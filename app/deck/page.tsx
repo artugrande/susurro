@@ -68,10 +68,16 @@ const slides: ReactNode[] = [
     <p className="mt-5 max-w-xl text-pretty text-lg text-sand">
       Un coach de bienestar con voz. Tu memoria vive cifrada — y es tuya.
     </p>
-    <p className="mt-8 text-xs uppercase tracking-[0.25em] text-muted">
-      Powered by ElevenLabs · Arkiv
-    </p>
-    <p className="mt-2 text-xs text-muted/70">Arkiv × Puna Tech 2026</p>
+    <div className="mt-8 flex items-center gap-4 opacity-70">
+      <span className="text-[0.65rem] uppercase tracking-[0.2em] text-muted">
+        Powered by
+      </span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/elevenlogo.png" alt="ElevenLabs" className="h-4 w-auto" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/arkivwhite.png" alt="Arkiv" className="h-4 w-auto" />
+    </div>
+    <p className="mt-3 text-xs text-muted/70">Arkiv × Puna Tech 2026</p>
   </div>,
 
   // 1 — Problem
@@ -237,6 +243,17 @@ const slides: ReactNode[] = [
 
   // 8 — Builder
   <Slide key="builder" kicker="Sobre el builder" title="Arturo Grande — Product Builder.">
+    <div className="mb-4 flex items-center gap-4">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/artugrandefounder.jpg"
+        alt="Arturo Grande"
+        className="h-20 w-20 rounded-full border border-sand/30 object-cover"
+      />
+      <p className="text-sm text-muted">
+        9 hackathons ganados · podcast +250k repros · fundador de desafia.tech
+      </p>
+    </div>
     <ul className="space-y-3">
       <Bullet>En web3 desde 2022. Escaló una fintech de $5M a $65M USD procesados en 3 años.</Bullet>
       <Bullet>9 hackathons ganados: Celo, Polkadot, ETHGlobal, Avalanche, GenLayer, Worldcoin, Stellar.</Bullet>
