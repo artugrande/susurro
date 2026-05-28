@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   title: "Susurro — tu compañero de IA con voz",
   description:
     "Un compañero de bienestar con voz. Tus conversaciones viven cifradas en Arkiv y son tuyas. Le das acceso por tiempo limitado y lo cortás cuando quieras.",
-  icons: { icon: "/logosusurro.svg" },
 };
 
 export default function RootLayout({

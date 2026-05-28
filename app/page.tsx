@@ -25,8 +25,7 @@ export default function Home() {
 
       <footer className="absolute inset-x-0 bottom-6 px-6">
         <p className="text-xs text-muted/80">
-          Datos sintéticos · No reemplaza atención profesional · Construido sobre
-          Arkiv + ElevenLabs
+          Susurro, no reemplaza a un terapeuta profesional
         </p>
       </footer>
     </main>
