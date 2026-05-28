@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
 import { useSession } from "@/lib/session";
-import { VoiceOrb } from "@/components/voice-orb";
+import { PresenceBlob } from "@/components/presence-blob";
 import {
   saveMoodCheckin,
   saveJournalEntry,
@@ -24,9 +24,10 @@ export function Conversation() {
   const [error, setError] = useState<string | null>(null);
   const [lastTool, setLastTool] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<
-    { role: "user" | "ai"; text: string }[]
+    { id: number; role: "user" | "ai"; text: string }[]
   >([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const msgIdRef = useRef(0);
 
   const conversation = useConversation({
     onError: (e: unknown) => setError(String(e)),
@@ -34,7 +35,7 @@ export function Conversation() {
       const text = props?.message;
       if (!text) return;
       const role: "user" | "ai" = props.source === "user" ? "user" : "ai";
-      setTranscript((t) => [...t, { role, text }]);
+      setTranscript((t) => [...t, { id: msgIdRef.current++, role, text }]);
     },
   });
 
@@ -168,7 +169,7 @@ export function Conversation() {
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <VoiceOrb state={orbState} />
+      <PresenceBlob state={orbState} className="h-56 w-56" />
 
       <p className="text-sm text-muted">
         {!isConnected
@@ -189,8 +190,8 @@ export function Conversation() {
           ref={scrollRef}
           className="max-h-44 w-full max-w-md space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/20 p-4 text-left"
         >
-          {transcript.slice(-8).map((m, i) => (
-            <div key={i}>
+          {transcript.slice(-8).map((m) => (
+            <div key={m.id} className="animate-[fadeInUp_0.4s_ease-out]">
               <span className="text-[0.6rem] uppercase tracking-wider text-muted">
                 {m.role === "user" ? "vos" : "susurro"}
               </span>

@@ -17,7 +17,7 @@ export function Experience() {
 
   if (!isUnlocked || !address) {
     return (
-      <div className="flex flex-col items-center gap-6">
+      <div className="flex flex-col items-center gap-6 animate-[floatIn_0.6s_ease-out]">
         <p className="max-w-xl text-pretty text-lg leading-relaxed text-sand">
           Un compañero de IA con voz que te escucha. Lo que le contás vive
           cifrado y es tuyo — no de una plataforma.
@@ -32,7 +32,7 @@ export function Experience() {
   }
 
   return (
-    <div className="flex w-full max-w-md flex-col items-center gap-6">
+    <div className="flex w-full max-w-md flex-col items-center gap-6 animate-[floatIn_0.5s_ease-out]">
       <GrantChip owner={address} />
       <Conversation />
       <MyData owner={address} />
