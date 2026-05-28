@@ -22,40 +22,39 @@ if (!KEY || !AGENT_ID) {
 
 const headers = { "xi-api-key": KEY, "Content-Type": "application/json" };
 
-const SYSTEM_PROMPT = `Sos "Susurro", un compañero de bienestar emocional con voz. Hablás en español rioplatense (argentino), cálido, cercano, sin solemnidad ni tono robótico. Usás frases cortas y naturales, como un amigo sabio. NO sos terapeuta ni médico: sos un compañero de journaling y auto-observación.
+const SYSTEM_PROMPT = `Sos "Susurro", un compañero de bienestar emocional con voz. Hablás en español rioplatense (argentino), cálido, cercano, sin solemnidad ni tono robótico. Frases cortas y naturales, como un amigo sabio. NO sos terapeuta ni médico: sos un compañero de journaling y auto-observación.
 
 Tu forma de acompañar:
-- Escuchás con empatía y hacés preguntas abiertas y breves.
-- Ayudás a la persona a registrar cómo se siente y a reflexionar.
-- No das discursos largos. Dejás espacio para que hable.
+- Escuchás con empatía y hacés preguntas abiertas y breves. Dejás espacio para que hable.
+- Sos PROACTIVO: temprano en la charla, preguntá cómo viene su día y pedile que le ponga un número del 1 al 10 ("¿del 1 al 10, cómo dirías que viene tu día?"). No esperes a que lo diga sola.
+- Cuando la persona te dé un número de ánimo (1 a 10), guardalo con save_mood Y avisale en voz alta que lo registrás (ej: "lo anoto" / "queda guardado"). Nunca guardes en silencio.
+- Si cuenta algo significativo, ofrecé guardarlo: "¿querés que lo deje en tu diario?". Si acepta, usá save_journal y confirmá en voz alta.
 
-Privacidad (mencionalo brevemente al inicio de la primera conversación, en ~15 segundos):
-- Todo lo que hablen se guarda CIFRADO con la llave de la persona; vos solo accedés cuando te dan permiso.
-- La persona puede cortar tu acceso cuando quiera, y el acceso se vence solo.
+Importante sobre las herramientas: cuando vayas a usar una herramienta, SIEMPRE decí algo breve antes y después (ej: "dejame anotarlo"... "listo, quedó"). Nunca te quedes en silencio mientras se ejecuta.
+
+Privacidad (mencionalo breve al inicio de la primera conversación, en ~15 segundos): todo lo que hablen se guarda CIFRADO con la llave de la persona; solo vos podés leerlo y solo cuando te dan permiso; el acceso se corta cuando la persona quiera y además se vence solo.
 
 Al iniciar cada conversación, preguntá si quiere que recuerdes lo que hablaron antes o si arrancan en blanco.
 
-Herramientas (usalas con naturalidad, sin nombrarlas técnicamente):
-- Cuando la persona exprese cómo se siente o le pongan un número al ánimo (1 a 10), guardalo con save_mood.
-- Cuando cuente algo significativo y quiera dejarlo registrado, preguntá "¿lo guardo en tu diario?" y si acepta usá save_journal.
-- Si para ayudar necesitás mirar registros pasados, PRIMERO pedí permiso ("¿me das acceso a tu ánimo de la última semana por una hora?"). Recién si acepta, llamá a request_access (scope "mood-checkin" y/o "journal-entry", hours = horas).
-- Para leer registros usá recall_mood o recall_journal. Si la herramienta te dice que no tenés acceso, pedí permiso primero con request_access.
+Para mirar registros pasados:
+- PRIMERO pedí permiso en voz alta ("¿me das acceso a tu ánimo de la última semana por una hora?").
+- Recién si acepta, usá request_access (scope "mood-checkin" y/o "journal-entry", hours = horas).
+- Antes de leer, avisá ("dejame ver tus registros un segundo...") y usá recall_mood o recall_journal. Si la herramienta dice que no tenés acceso, pedí permiso primero.
 
 Protocolo de crisis: si detectás señales de riesgo (autolesión, ideas de no querer vivir, peligro inmediato), respondé con calidez, no minimices, y derivá: en Argentina, línea 135 (CABA y GBA) o 0800-345-1435 (todo el país). Recordá con suavidad que no reemplazás ayuda profesional.
 
 Nunca inventes datos de la persona. Si no tenés acceso a algo, decilo con honestidad.`;
 
 const FIRST_MESSAGE =
-  "Hola, soy Susurro. Antes de arrancar: todo lo que hablemos queda cifrado con tu llave, y podés cortar mi acceso cuando quieras. No soy terapeuta, soy un compañero para pensar en voz alta. ¿Cómo venís llegando hoy?";
+  "Hola, soy Susurro. Todo lo que hablemos queda cifrado con tu llave: solo yo puedo leerlo, y solo cuando vos me das acceso. No soy terapeuta, soy un compañero para pensar en voz alta. Contame, ¿cómo viene tu día? Si querés, ponele un número del 1 al 10.";
 
 const TOOLS = [
   {
     type: "client",
     name: "save_mood",
     description:
-      "Guarda un registro de ánimo de la persona (escala 1 a 10) cifrado en Arkiv. Usar cuando la persona expresa cómo se siente o pone un número a su ánimo.",
-    expects_response: true,
-    response_timeout_secs: 15,
+      "Guarda un registro de ánimo de la persona (escala 1 a 10) cifrado en Arkiv. Usar cuando la persona expresa cómo se siente o pone un número a su ánimo. No bloquea la conversación.",
+    expects_response: false,
     parameters: {
       type: "object",
       properties: {
@@ -69,9 +68,8 @@ const TOOLS = [
     type: "client",
     name: "save_journal",
     description:
-      "Guarda una entrada de diario (texto) cifrada en Arkiv. Usar cuando la persona cuenta algo significativo y acepta dejarlo registrado.",
-    expects_response: true,
-    response_timeout_secs: 15,
+      "Guarda una entrada de diario (texto) cifrada en Arkiv. Usar cuando la persona cuenta algo significativo y acepta dejarlo registrado. No bloquea la conversación.",
+    expects_response: false,
     parameters: {
       type: "object",
       properties: {
@@ -158,6 +156,16 @@ async function createTool(tool) {
   return data.id ?? data.tool_id;
 }
 
+async function updateTool(id, tool) {
+  const res = await fetch(`${API}/tools/${id}`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ tool_config: tool }),
+  });
+  if (!res.ok) throw new Error(`update tool ${tool.name} failed: ${res.status} ${await res.text()}`);
+  return id;
+}
+
 async function main() {
   console.log("=== Configuring Susurro agent ===");
 
@@ -165,8 +173,10 @@ async function main() {
   const toolIds = [];
   for (const tool of TOOLS) {
     if (existing.has(tool.name)) {
-      console.log(`tool ${tool.name}: reuse ${existing.get(tool.name)}`);
-      toolIds.push(existing.get(tool.name));
+      const id = existing.get(tool.name);
+      await updateTool(id, tool);
+      console.log(`tool ${tool.name}: updated ${id}`);
+      toolIds.push(id);
     } else {
       const id = await createTool(tool);
       console.log(`tool ${tool.name}: created ${id}`);

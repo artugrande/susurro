@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "@/lib/session";
 import { seedDemoData } from "@/lib/seed";
 
@@ -9,8 +9,15 @@ type State = "idle" | "loading" | "done" | "error";
 export function SeedButton() {
   const { address, encryptionKey } = useSession();
   const [state, setState] = useState<State>("idle");
+  const [isDev, setIsDev] = useState(false);
 
-  if (!address || !encryptionKey) return null;
+  // Demo-only: hidden unless the page is opened with ?dev. Keeps the normal
+  // UX clean while still allowing us to seed a realistic history for the video.
+  useEffect(() => {
+    setIsDev(new URLSearchParams(window.location.search).has("dev"));
+  }, []);
+
+  if (!isDev || !address || !encryptionKey) return null;
 
   async function run() {
     setState("loading");

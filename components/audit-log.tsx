@@ -19,16 +19,20 @@ export function AuditLog({ owner }: { owner: string }) {
         onClick={() => setOpen((o) => !o)}
         className="text-xs text-muted underline underline-offset-4 hover:text-sand"
       >
-        👁️ Ver quién leyó qué ({entries.length})
+        🔒 Registro de accesos de Susurro ({entries.length})
       </button>
 
       {open && (
         <div className="mt-3 space-y-2 rounded-2xl border border-white/10 bg-black/20 p-4 text-left">
           <p className="text-xs text-muted">
-            Registro público e inmutable en Arkiv. Cualquiera puede verificarlo.
+            Nadie más que vos puede leer tu contenido — sigue cifrado. Acá queda
+            registrado, de forma verificable, cada vez que Susurro accedió con tu
+            permiso. Es la prueba de que el acceso fue solo el que autorizaste.
           </p>
           {entries.length === 0 ? (
-            <p className="text-sm text-muted">Todavía no hubo accesos.</p>
+            <p className="text-sm text-muted">
+              Susurro todavía no accedió a tu data.
+            </p>
           ) : (
             <ul className="space-y-2">
               {entries.map((e) => {
