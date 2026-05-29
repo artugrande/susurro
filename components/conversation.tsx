@@ -25,6 +25,9 @@ export function Conversation() {
   const [sessionId] = useState(() => crypto.randomUUID());
   const [error, setError] = useState<string | null>(null);
   const [lastTool, setLastTool] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [welcomeSeen, setWelcomeSeen] = useState(false);
   const [transcript, setTranscript] = useState<
     { id: number; role: "user" | "ai"; text: string }[]
   >([]);
@@ -87,6 +90,10 @@ export function Conversation() {
     }, 250);
     return () => clearInterval(id);
   }, [isConnected, conversation]);
+
+  useEffect(() => {
+    if (isConnected) setStarting(false);
+  }, [isConnected]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -203,6 +210,7 @@ export function Conversation() {
     setTranscript([]);
     startedAtRef.current = Date.now();
     setRemaining(MAX_SECONDS);
+    setStarting(true);
     try {
       conversation.startSession({
         agentId: AGENT_ID,
@@ -210,9 +218,22 @@ export function Conversation() {
         clientTools: buildClientTools(),
       });
     } catch (e) {
+      setStarting(false);
       setError(String(e));
     }
   }, [conversation, buildClientTools]);
+
+  // First tap shows a short welcome/privacy modal; after that, start directly.
+  const requestStart = useCallback(() => {
+    if (welcomeSeen) start();
+    else setWelcomeOpen(true);
+  }, [welcomeSeen, start]);
+
+  const confirmWelcome = useCallback(() => {
+    setWelcomeSeen(true);
+    setWelcomeOpen(false);
+    start();
+  }, [start]);
 
   const stop = useCallback(() => {
     endedRef.current = true;
@@ -259,7 +280,7 @@ export function Conversation() {
         <PresenceBlob state={orbState} className="h-48 w-48" />
         {!isConnected && (
           <button
-            onClick={start}
+            onClick={requestStart}
             aria-label="Empezar a hablar con Luna"
             className="absolute inset-0 rounded-full"
           />
@@ -267,11 +288,13 @@ export function Conversation() {
       </div>
 
       <p className="text-sm text-muted">
-        {!isConnected
-          ? "Tocá la esfera para empezar tu check-in de 3 minutos"
-          : stableSpeaking
+        {isConnected
+          ? stableSpeaking
             ? "Luna está hablando…"
-            : "Luna te escucha…"}
+            : "Luna te escucha…"
+          : starting
+            ? "Conectando con Luna…"
+            : "Tocá la esfera para empezar tu check-in de 3 minutos"}
       </p>
 
       {isConnected && (
@@ -313,11 +336,12 @@ export function Conversation() {
 
       {!isConnected ? (
         <button
-          onClick={start}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-sand px-7 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-sand/90"
+          onClick={requestStart}
+          disabled={starting}
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-sand px-7 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-sand/90 disabled:opacity-60"
         >
           <Mic className="h-4 w-4" />
-          Hablar con Luna
+          {starting ? "Conectando…" : "Hablar con Luna"}
         </button>
       ) : (
         <button
@@ -329,6 +353,45 @@ export function Conversation() {
       )}
 
       {error && <p className="max-w-sm text-xs text-red-400">{error}</p>}
+
+      {welcomeOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.15s_ease-out]"
+            onClick={() => setWelcomeOpen(false)}
+          />
+          <div className="relative w-full max-w-sm rounded-3xl border border-sand/20 bg-charcoal p-6 text-center shadow-2xl animate-[popIn_0.18s_ease-out]">
+            <h3 className="text-lg font-semibold text-foreground">
+              Hola, soy Luna 🌙
+            </h3>
+            <ul className="mt-4 space-y-3 text-left text-sm text-muted">
+              <li>
+                Soy tu compañera para pensar en voz alta — no reemplazo a un
+                terapeuta.
+              </li>
+              <li>
+                Todo lo que hablemos se guarda{" "}
+                <span className="text-sand">cifrado con tu llave</span>. Solo vos
+                podés leerlo.
+              </li>
+              <li>
+                El check-in dura <span className="text-sand">3 minutos</span>.
+                Cortás cuando quieras.
+              </li>
+            </ul>
+            <button
+              onClick={confirmWelcome}
+              className="mt-6 w-full rounded-full bg-sand px-6 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-sand/90"
+            >
+              Empezar a hablar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
