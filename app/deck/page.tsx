@@ -2,26 +2,17 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame } from "lucide-react";
 import { PresenceBlob } from "@/components/presence-blob";
 import { MoodTimeline } from "@/components/mood-timeline";
 import { ThreadsView } from "@/components/threads-view";
-import type { MyEntry } from "@/lib/read";
+import { computeStats } from "@/lib/stats";
+import { DEMO_ENTRIES } from "@/lib/demo";
 
-const DAY = 86_400_000;
-// Sample data (an everyday person's 2 weeks) to render the real product live.
-const SAMPLE_ENTRIES: MyEntry[] = [
-  { entityKey: "s1", type: "mood", mood: 6, summary: "charla larga con mi vieja", tags: ["familia", "vínculos"], created: Date.now() - 12 * DAY },
-  { entityKey: "s2", type: "mood", mood: 8, summary: "café eterno con una amiga que no veía hace meses", tags: ["amistad", "reencuentro"], created: Date.now() - 11 * DAY },
-  { entityKey: "s3", type: "mood", mood: 3, summary: "discutí con mi pareja por una pavada", tags: ["pareja", "discusión"], created: Date.now() - 10 * DAY },
-  { entityKey: "s4", type: "mood", mood: 4, summary: "lunes a full, llegué sin energía", tags: ["trabajo", "cansancio"], created: Date.now() - 9 * DAY },
-  { entityKey: "s5", type: "mood", mood: 7, summary: "caminé con el perro al atardecer", tags: ["mascota", "naturaleza"], created: Date.now() - 8 * DAY },
-  { entityKey: "s6", type: "mood", mood: 3, summary: "me sentí solo hasta tarde", tags: ["soledad", "ánimo"], created: Date.now() - 7 * DAY },
-  { entityKey: "s7", type: "mood", mood: 8, summary: "nos pedimos perdón con mi pareja", tags: ["pareja", "reconciliación"], created: Date.now() - 6 * DAY },
-  { entityKey: "s8", type: "mood", mood: 9, summary: "cena con amigos, me reí muchísimo", tags: ["amistad", "alegría"], created: Date.now() - 3 * DAY },
-  { entityKey: "s9", type: "mood", mood: 5, summary: "ansioso por una decisión que tengo que tomar", tags: ["ansiedad", "futuro"], created: Date.now() - 1 * DAY },
-  { entityKey: "s10", type: "mood", mood: 7, summary: "mate y música a la mañana, tranqui", tags: ["descanso", "calma"], created: Date.now() },
-];
+// Shared synthetic data (an everyday person's 2 weeks) to render the real
+// product components live. 14 consecutive days → a real 14-day streak.
+const SAMPLE_ENTRIES = DEMO_ENTRIES;
+const SAMPLE_STATS = computeStats(SAMPLE_ENTRIES);
 
 /* ---------- slide building blocks ---------- */
 
@@ -279,6 +270,27 @@ const slides: ReactNode[] = [
     <h2 className="mb-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
       Tu semana, cifrada y tuya.
     </h2>
+    <div className="mb-4 grid grid-cols-3 gap-3 text-center">
+      <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-4">
+        <div className="flex items-center justify-center gap-1.5 text-2xl font-semibold text-sand">
+          <Flame className="h-5 w-5" />
+          {SAMPLE_STATS.streak}
+        </div>
+        <div className="mt-0.5 text-xs text-muted">días seguidos</div>
+      </div>
+      <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-4">
+        <div className="text-2xl font-semibold text-foreground">
+          {SAMPLE_STATS.total}
+        </div>
+        <div className="mt-0.5 text-xs text-muted">registros</div>
+      </div>
+      <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-4">
+        <div className="text-2xl font-semibold text-foreground">
+          {SAMPLE_STATS.todayDone ? "✓" : "—"}
+        </div>
+        <div className="mt-0.5 text-xs text-muted">hoy</div>
+      </div>
+    </div>
     <MoodTimeline entries={SAMPLE_ENTRIES} />
     <div className="mt-4 grid gap-6 sm:grid-cols-2">
       <ThreadsView entries={SAMPLE_ENTRIES} />

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PresenceBlob } from "@/components/presence-blob";
+import { ProductShowcase } from "@/components/product-showcase";
 
 function LaunchButton({ className = "" }: { className?: string }) {
   return (
@@ -81,6 +82,21 @@ export default function Landing() {
           <span className="text-sand">o privacidad, o continuidad</span>. Susurro
           te da las dos.
         </p>
+      </section>
+
+      {/* ---------- product showcase ---------- */}
+      <section className="w-full max-w-4xl py-16 text-center">
+        <p className="text-xs uppercase tracking-[0.2em] text-sand/70">
+          El producto
+        </p>
+        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          Hablás con Luna. Tu semana queda cifrada y tuya.
+        </h2>
+        <p className="mx-auto mt-3 mb-10 max-w-xl text-pretty leading-relaxed text-muted">
+          Check-ins de 3 minutos por voz. Susurro arma tu racha, ve tus patrones
+          y te sugiere pasos chiquitos — todo cifrado de punta a punta.
+        </p>
+        <ProductShowcase />
       </section>
 
       {/* ---------- how it works ---------- */}
