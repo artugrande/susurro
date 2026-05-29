@@ -110,6 +110,8 @@ const slides: ReactNode[] = [
       <img src="/elevenlogo.png" alt="ElevenLabs" className="h-4 w-auto" />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/arkivwhite.png" alt="Arkiv" className="h-4 w-auto" />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/vercellogo.png" alt="Vercel" className="h-4 w-auto" />
     </div>
     <p className="mt-3 text-xs text-muted/70">Puna Tech 2026</p>
   </div>,

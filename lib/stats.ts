@@ -137,16 +137,32 @@ export function buildWeeklyRecap(entries: MyEntry[]): WeeklyRecap {
   return { hasData: true, text };
 }
 
-/** Compact, non-sensitive summary used to ask the LLM for recommendations. */
+/**
+ * Context for the LLM recommendations: the week's actual entries (mood + what
+ * the person shared + tags) so the advice connects to their real situation,
+ * not generic tips. Notes are truncated; only the last week is included.
+ */
 export function buildRecommendationContext(entries: MyEntry[]): string | null {
-  const recap = buildWeeklyRecap(entries);
-  if (!recap.hasData) return null;
+  const since = Date.now() - 7 * DAY;
+  const week = entries
+    .filter((e) => e.created >= since)
+    .sort((a, b) => b.created - a.created);
+  if (week.length === 0) return null;
+
   const { worries, brights } = computeThreads(entries);
   const worryTags = worries.slice(0, 5).map((t) => t.tag).join(", ") || "—";
   const brightTags = brights.slice(0, 5).map((t) => t.tag).join(", ") || "—";
+
+  const lines = week.slice(0, 12).map((e) => {
+    const note = e.summary ? e.summary.slice(0, 160) : "(sin nota)";
+    const tags = e.tags.length ? ` [${e.tags.join(", ")}]` : "";
+    return `- ánimo ${e.mood}/10: ${note}${tags}`;
+  });
+
   return [
-    recap.text,
-    `Temas que la preocupan: ${worryTags}.`,
-    `Temas que la hacen bien: ${brightTags}.`,
-  ].join(" ");
+    `Lo que la pone mal: ${worryTags}.`,
+    `Lo que la hace bien: ${brightTags}.`,
+    "Registros de la semana (ánimo + qué compartió):",
+    ...lines,
+  ].join("\n");
 }

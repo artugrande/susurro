@@ -57,13 +57,20 @@ export function Recommendations({ entries }: { entries: MyEntry[] }) {
         <span className="inline-flex items-center gap-1.5 text-[0.6rem] text-muted">
           generado con
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/vercel.svg" alt="Vercel" className="h-3 w-auto invert" />
+          <img src="/vercellogo.png" alt="Vercel" className="h-3 w-auto" />
           AI Gateway
         </span>
       </div>
 
       {loading && (
         <p className="text-sm text-muted">Pensando recomendaciones para vos…</p>
+      )}
+
+      {!loading && items.length > 0 && (
+        <p className="mb-2 text-[0.6rem] text-muted/70">
+          No reemplaza ayuda profesional. Si la estás pasando mal, en Argentina
+          llamá al 135.
+        </p>
       )}
 
       {!loading && (

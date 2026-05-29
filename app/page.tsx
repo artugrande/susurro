@@ -47,6 +47,8 @@ export default function Landing() {
           <img src="/elevenlogo.png" alt="ElevenLabs" className="h-4 w-auto" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/arkivwhite.png" alt="Arkiv" className="h-4 w-auto" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/vercellogo.png" alt="Vercel" className="h-4 w-auto" />
         </div>
       </section>
 
