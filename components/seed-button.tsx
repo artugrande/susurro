@@ -39,7 +39,7 @@ export function SeedButton() {
   }
 
   const label: Record<State, string> = {
-    idle: "Cargar 14 días de datos de ejemplo",
+    idle: "Cargar una semana de datos de ejemplo",
     loading: "Cargando datos cifrados…",
     done: "✓ Datos de ejemplo cargados",
     error: "Error — reintentar",

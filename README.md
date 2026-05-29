@@ -73,7 +73,7 @@ El contenido sensible se **cifra en el navegador** con una llave derivada de tu 
 En [la demo en vivo](https://susurro-nine.vercel.app) solo necesitás un **email** y micrófono — sin extensión de wallet ni frase semilla:
 
 1. **Ingresá con tu email** → Privy te crea una embedded wallet automáticamente → **Empezá a hablar con Luna** (firmás un mensaje; de esa firma se deriva tu llave de cifrado, que nunca sale del navegador).
-2. *(Opcional)* **Cargar 14 días de datos de ejemplo** para que el coach tenga historial que leer.
+2. *(Opcional)* **Cargar una semana de datos de ejemplo** para que el coach tenga historial que leer.
 3. **🎙️ Hablar con Luna** y permitir el micrófono.
 4. Contale cómo estás (*"hoy me siento un 4"*) → guarda tu ánimo cifrado en Arkiv.
 5. Pedile que mire tu historial → te pide permiso → al aceptar, aparece el **chip de acceso con cuenta regresiva**.

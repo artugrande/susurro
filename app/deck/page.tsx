@@ -10,7 +10,7 @@ import { computeStats } from "@/lib/stats";
 import { DEMO_ENTRIES } from "@/lib/demo";
 
 // Shared synthetic data (an everyday person's 2 weeks) to render the real
-// product components live. 14 consecutive days → a real 14-day streak.
+// product components live. 7 consecutive days → a real full-week streak.
 const SAMPLE_ENTRIES = DEMO_ENTRIES;
 const SAMPLE_STATS = computeStats(SAMPLE_ENTRIES);
 

@@ -11,7 +11,7 @@ const DAY = 86_400_000;
  */
 export function MoodTimeline({
   entries,
-  days = 14,
+  days = 7,
 }: {
   entries: MyEntry[];
   days?: number;

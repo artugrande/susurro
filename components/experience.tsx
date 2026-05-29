@@ -28,6 +28,10 @@ export function Experience() {
 
   return (
     <div className="flex w-full max-w-md flex-col items-center gap-6 animate-[floatIn_0.5s_ease-out]">
+      {/* Account pill (email + logout) — always reachable while you're in. */}
+      <div className="flex w-full justify-end">
+        <ConnectButton />
+      </div>
       <GrantChip owner={address} />
       <Conversation />
       <MyData owner={address} />
