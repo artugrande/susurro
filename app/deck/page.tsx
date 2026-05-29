@@ -9,18 +9,18 @@ import { ThreadsView } from "@/components/threads-view";
 import type { MyEntry } from "@/lib/read";
 
 const DAY = 86_400_000;
-// Sample data (the Salta-dev story) to render the real product components live.
+// Sample data (an everyday person's 2 weeks) to render the real product live.
 const SAMPLE_ENTRIES: MyEntry[] = [
-  { entityKey: "s1", type: "mood", mood: 7, summary: "proyecto nuevo en el laburo", tags: ["trabajo", "energía"], created: Date.now() - 12 * DAY },
-  { entityKey: "s2", type: "mood", mood: 8, summary: "mi perro Matías me sacó una sonrisa", tags: ["mascota"], created: Date.now() - 11 * DAY },
-  { entityKey: "s3", type: "mood", mood: 2, summary: "perdió Boca, bajón", tags: ["boca", "deporte", "tristeza"], created: Date.now() - 10 * DAY },
-  { entityKey: "s4", type: "mood", mood: 4, summary: "lunes pesado", tags: ["trabajo", "cansancio"], created: Date.now() - 9 * DAY },
-  { entityKey: "s5", type: "mood", mood: 7, summary: "salí a correr, me despejó", tags: ["ejercicio"], created: Date.now() - 8 * DAY },
-  { entityKey: "s6", type: "mood", mood: 3, summary: "bug en producción", tags: ["trabajo", "estrés"], created: Date.now() - 7 * DAY },
-  { entityKey: "s7", type: "mood", mood: 8, summary: "lo resolví, me felicitaron", tags: ["trabajo", "logro"], created: Date.now() - 6 * DAY },
-  { entityKey: "s8", type: "mood", mood: 9, summary: "asado con amigos", tags: ["amigos"], created: Date.now() - 3 * DAY },
-  { entityKey: "s9", type: "mood", mood: 5, summary: "ansioso por la demo", tags: ["trabajo", "ansiedad"], created: Date.now() - 1 * DAY },
-  { entityKey: "s10", type: "mood", mood: 6, summary: "con ganas de mostrar lo que construí", tags: ["trabajo"], created: Date.now() },
+  { entityKey: "s1", type: "mood", mood: 6, summary: "charla larga con mi vieja", tags: ["familia", "vínculos"], created: Date.now() - 12 * DAY },
+  { entityKey: "s2", type: "mood", mood: 8, summary: "café eterno con una amiga que no veía hace meses", tags: ["amistad", "reencuentro"], created: Date.now() - 11 * DAY },
+  { entityKey: "s3", type: "mood", mood: 3, summary: "discutí con mi pareja por una pavada", tags: ["pareja", "discusión"], created: Date.now() - 10 * DAY },
+  { entityKey: "s4", type: "mood", mood: 4, summary: "lunes a full, llegué sin energía", tags: ["trabajo", "cansancio"], created: Date.now() - 9 * DAY },
+  { entityKey: "s5", type: "mood", mood: 7, summary: "caminé con el perro al atardecer", tags: ["mascota", "naturaleza"], created: Date.now() - 8 * DAY },
+  { entityKey: "s6", type: "mood", mood: 3, summary: "me sentí solo hasta tarde", tags: ["soledad", "ánimo"], created: Date.now() - 7 * DAY },
+  { entityKey: "s7", type: "mood", mood: 8, summary: "nos pedimos perdón con mi pareja", tags: ["pareja", "reconciliación"], created: Date.now() - 6 * DAY },
+  { entityKey: "s8", type: "mood", mood: 9, summary: "cena con amigos, me reí muchísimo", tags: ["amistad", "alegría"], created: Date.now() - 3 * DAY },
+  { entityKey: "s9", type: "mood", mood: 5, summary: "ansioso por una decisión que tengo que tomar", tags: ["ansiedad", "futuro"], created: Date.now() - 1 * DAY },
+  { entityKey: "s10", type: "mood", mood: 7, summary: "mate y música a la mañana, tranqui", tags: ["descanso", "calma"], created: Date.now() },
 ];
 
 /* ---------- slide building blocks ---------- */
@@ -244,7 +244,8 @@ const slides: ReactNode[] = [
             vos
           </span>
           <p className="text-sm text-foreground/90">
-            Hoy ando un cuatro… perdió Boca y me bajoneó.
+            Hoy ando en un cuatro… discutí con mi pareja y me quedó dando
+            vueltas todo el día.
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
@@ -252,7 +253,8 @@ const slides: ReactNode[] = [
             luna
           </span>
           <p className="text-sm text-sand">
-            Te escucho. Lo anoto. ¿Querés que hablemos de eso un toque?
+            Qué feo cuando una charla queda picando. Lo anoto. ¿Pasó algo puntual
+            o se fue escalando solo?
           </p>
         </div>
         <p className="text-center font-mono text-xs text-sand">
@@ -289,10 +291,15 @@ const slides: ReactNode[] = [
         </div>
         <ul className="space-y-2 text-sm">
           <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
-            Planeá algo que te cope para después de los partidos de Boca.
+            Retomá la charla con tu pareja desde lo que sentís, no desde el
+            cansancio.
           </li>
           <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
-            Anotate en más hackathons: esa energía te sienta de diez.
+            Repetí esas cenas con amigos: es lo que más te recarga.
+          </li>
+          <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
+            En las noches bajón, dejá el teléfono lejos 20 minutos antes de
+            dormir.
           </li>
         </ul>
       </div>
