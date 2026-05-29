@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-// Luna's voice (Mariana — argentine). flash_v2_5 supports Spanish.
-const VOICE_ID = "9rvdnhrYoXoUt4igKpBw";
+// "Sarah" — a premade ElevenLabs voice usable via the API on the free tier.
+// (Luna's conversational voice, Mariana, is a "library" voice that the TTS API
+// blocks on free plans with HTTP 402; premade voices are allowed.)
+// flash_v2_5 is multilingual, so it narrates the Spanish recap fine.
+const VOICE_ID = "EXAVITQu4vr4xnSDxMaL";
 const MODEL_ID = "eleven_flash_v2_5";
 
 /**

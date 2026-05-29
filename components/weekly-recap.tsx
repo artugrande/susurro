@@ -62,7 +62,7 @@ export function WeeklyRecap({ entries }: { entries: MyEntry[] }) {
       </div>
       <p className="text-sm leading-relaxed text-foreground/90">{recap.text}</p>
       {recap.hasData && (
-        <p className="mt-2 text-[0.65rem] text-muted">Narrado por Luna · voz IA</p>
+        <p className="mt-2 text-[0.65rem] text-muted">Resumen en audio · voz IA</p>
       )}
     </div>
   );
