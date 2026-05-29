@@ -262,15 +262,15 @@ const slides: ReactNode[] = [
   // Product — dashboard
   <div
     key="prod-dash"
-    className="mx-auto flex h-full w-full max-w-3xl flex-col justify-center"
+    className="mx-auto flex h-full w-full max-w-5xl flex-col justify-center"
   >
     <p className="mb-2 text-xs uppercase tracking-[0.2em] text-sand/70">
       El producto
     </p>
-    <h2 className="mb-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+    <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
       Tu semana, cifrada y tuya.
     </h2>
-    <div className="mb-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm">
+    <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm">
       <span className="inline-flex items-center gap-1.5 font-semibold text-sand">
         <Flame className="h-4 w-4" />
         {SAMPLE_STATS.streak}
@@ -285,29 +285,31 @@ const slides: ReactNode[] = [
         <span className="font-normal text-muted">hoy</span>
       </span>
     </div>
-    <MoodTimeline entries={SAMPLE_ENTRIES} />
-    <div className="mt-4 grid gap-6 sm:grid-cols-2">
-      <ThreadsView entries={SAMPLE_ENTRIES} />
-      <div>
-        <div className="mb-2 flex items-center gap-1.5 text-[0.65rem] text-muted">
-          Recomendaciones · generado con
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/vercellogo.png" alt="Vercel" className="h-3 w-auto" /> AI
-          Gateway
+    <div className="grid items-start gap-6 lg:grid-cols-2">
+      <MoodTimeline entries={SAMPLE_ENTRIES} />
+      <div className="space-y-4">
+        <ThreadsView entries={SAMPLE_ENTRIES} />
+        <div>
+          <div className="mb-2 flex items-center gap-1.5 text-[0.65rem] text-muted">
+            Recomendaciones · generado con
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/vercellogo.png" alt="Vercel" className="h-3 w-auto" /> AI
+            Gateway
+          </div>
+          <ul className="space-y-2 text-sm">
+            <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
+              Retomá la charla con tu pareja desde lo que sentís, no desde el
+              cansancio.
+            </li>
+            <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
+              Repetí esas cenas con amigos: es lo que más te recarga.
+            </li>
+            <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
+              En las noches bajón, dejá el teléfono lejos 20 minutos antes de
+              dormir.
+            </li>
+          </ul>
         </div>
-        <ul className="space-y-2 text-sm">
-          <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
-            Retomá la charla con tu pareja desde lo que sentís, no desde el
-            cansancio.
-          </li>
-          <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
-            Repetí esas cenas con amigos: es lo que más te recarga.
-          </li>
-          <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
-            En las noches bajón, dejá el teléfono lejos 20 minutos antes de
-            dormir.
-          </li>
-        </ul>
       </div>
     </div>
   </div>,
