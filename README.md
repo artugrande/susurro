@@ -2,12 +2,14 @@
 
 **Un compañero de IA con voz para el bienestar mental, donde tu memoria de conversaciones vive cifrada y es tuya — no de una plataforma.**
 
+[![Susurro — demo en YouTube](https://img.youtube.com/vi/7JWos7N7RuA/maxresdefault.jpg)](https://www.youtube.com/watch?v=7JWos7N7RuA)
+
 Proyecto para el track **Arkiv × Puna Tech 2026** (Aplicaciones de IA sobre Arkiv).
 
 - **Equipo:** solo — [@artugrande](https://github.com/artugrande)
 - **Track:** Arkiv Network — IA + datos verificables
 - **Demo en vivo:** https://susurro-nine.vercel.app
-- **Video:** _(por publicar)_
+- **Video:** [demo en YouTube](https://www.youtube.com/watch?v=7JWos7N7RuA)
 
 ---
 
