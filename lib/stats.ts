@@ -136,3 +136,17 @@ export function buildWeeklyRecap(entries: MyEntry[]): WeeklyRecap {
 
   return { hasData: true, text };
 }
+
+/** Compact, non-sensitive summary used to ask the LLM for recommendations. */
+export function buildRecommendationContext(entries: MyEntry[]): string | null {
+  const recap = buildWeeklyRecap(entries);
+  if (!recap.hasData) return null;
+  const { worries, brights } = computeThreads(entries);
+  const worryTags = worries.slice(0, 5).map((t) => t.tag).join(", ") || "—";
+  const brightTags = brights.slice(0, 5).map((t) => t.tag).join(", ") || "—";
+  return [
+    recap.text,
+    `Temas que la preocupan: ${worryTags}.`,
+    `Temas que la hacen bien: ${brightTags}.`,
+  ].join(" ");
+}

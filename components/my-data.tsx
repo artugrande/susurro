@@ -14,6 +14,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { MoodTimeline } from "@/components/mood-timeline";
 import { WeeklyRecap } from "@/components/weekly-recap";
 import { ThreadsView } from "@/components/threads-view";
+import { Recommendations } from "@/components/recommendations";
 
 export function MyData({ owner }: { owner: string }) {
   const { encryptionKey } = useSession();
@@ -180,6 +181,8 @@ export function MyData({ owner }: { owner: string }) {
       </div>
 
       <ThreadsView entries={list} />
+
+      <Recommendations entries={list} />
 
       <div className="border-t border-white/5 pt-3 text-xs leading-relaxed text-muted">
         🔒 Cada registro vive cifrado en Arkiv (testnet BRAGA) — solo tu wallet
