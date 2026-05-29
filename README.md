@@ -36,13 +36,45 @@ Toca las tres verticales del track: memoria de IA propiedad del usuario, procede
 
 ---
 
+## Arquitectura
+
+El contenido sensible se **cifra en el navegador** con una llave derivada de tu wallet; ni el servidor ni Arkiv ven el texto. Las escrituras las firma y **paga la app wallet** (UX sin gas: no necesitás GLM), y la propiedad real es por **cifrado** (solo vos descifrás) + el `$creator` inmutable de Arkiv.
+
+```
+┌───────────────────── Navegador (Next.js 16 · App Router) ─────────────────────┐
+│                                                                               │
+│   UI: orbe de voz · dashboard · mood timeline · hilos · acceso (grants)       │
+│                                                                               │
+│   Privy ─ login con email ─► embedded wallet ─ firma ─► lib/crypto.ts          │
+│   (self-custodial, sin extensión)                      deriva tu llave AES     │
+│                                                        (nunca sale del browser)│
+│                                                                               │
+│   ElevenLabs Conversational AI (voz) ─ clientTools ─► cifra cada registro      │
+└───────┬───────────────────────────┬───────────────────────────┬──────────────┘
+        │ voz (WebRTC)               │ writes/reads (cifrados)    │ recomendaciones
+        ▼                            ▼                            ▼
+  Agente ElevenLabs        Next API routes (app/api/*)      Vercel AI Gateway
+  (agente público)          /arkiv/* → la app wallet         (gemini-2.5-flash)
+                            firma y paga el gas
+                            (sin gas para el usuario)
+                                   │
+                                   ▼
+                            Arkiv (Braga testnet)
+                            entidades = atributos públicos
+                            + payload cifrado + expiresIn nativo
+```
+
+**Decisión de diseño:** la lógica con estado corre en el navegador, firmada por el usuario; la app wallet del lado del server solo firma/paga los writes a Arkiv (las escrituras se serializan con un lock para evitar colisiones de nonce). Las recomendaciones se generan con un contexto **no sensible** (resumen de ánimo + temas, nunca el texto crudo del diario).
+
+---
+
 ## Probar el demo
 
-En [la demo en vivo](https://susurro-nine.vercel.app) (necesitás una wallet tipo MetaMask y micrófono):
+En [la demo en vivo](https://susurro-nine.vercel.app) solo necesitás un **email** y micrófono — sin extensión de wallet ni frase semilla:
 
-1. **Conectar wallet** → **Desbloquear mi espacio** (firmás un mensaje; de esa firma se deriva tu llave de cifrado, que nunca sale del navegador).
+1. **Ingresá con tu email** → Privy te crea una embedded wallet automáticamente → **Empezá a hablar con Luna** (firmás un mensaje; de esa firma se deriva tu llave de cifrado, que nunca sale del navegador).
 2. *(Opcional)* **Cargar 14 días de datos de ejemplo** para que el coach tenga historial que leer.
-3. **🎙️ Hablar con Susurro** y permitir el micrófono.
+3. **🎙️ Hablar con Luna** y permitir el micrófono.
 4. Contale cómo estás (*"hoy me siento un 4"*) → guarda tu ánimo cifrado en Arkiv.
 5. Pedile que mire tu historial → te pide permiso → al aceptar, aparece el **chip de acceso con cuenta regresiva**.
 6. **Cortá el acceso** con el botón rojo → el coach pierde el contexto al instante.
@@ -56,7 +88,9 @@ En [la demo en vivo](https://susurro-nine.vercel.app) (necesitás una wallet tip
 | Capa de datos | [Arkiv](https://arkiv.network) — `@arkiv-network/sdk` (testnet BRAGA) |
 | Voz + agente | [ElevenLabs](https://elevenlabs.io) Conversational AI — `@elevenlabs/react` |
 | Cifrado | AES-256-GCM (Web Crypto), clave derivada de firma de wallet |
-| Wallet | viem + RainbowKit/wagmi |
+| Auth + wallet | [Privy](https://privy.io) — login con email + embedded wallets (self-custodial, sin extensión) |
+| Recomendaciones | [Vercel AI Gateway](https://vercel.com/ai-gateway) (`ai` SDK) — `gemini-2.5-flash` |
+| On-chain (server) | viem — la app wallet firma y paga el gas de cada write |
 | Deploy | Vercel |
 
 ### Modelo de datos (6 entidades Arkiv)
