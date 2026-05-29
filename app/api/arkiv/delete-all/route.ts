@@ -23,11 +23,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "owner required" }, { status: 400 });
     }
 
-    const keys: string[] = [];
-    for (const type of WIPE_TYPES) {
-      const ents = await queryByType({ owner, entityType: type, limit: 1000 });
-      keys.push(...ents.map((e) => e.entityKey));
-    }
+    // Gather entity keys to delete, in parallel and WITHOUT payloads
+    // (deleting only needs the key — fetching ciphertext on every entity
+    // would make the Arkiv RPC time out on bigger accounts).
+    // Per-type try/catch keeps one slow type from killing the whole wipe.
+    const perType = await Promise.all(
+      WIPE_TYPES.map(async (type) => {
+        try {
+          const ents = await queryByType({
+            owner,
+            entityType: type,
+            limit: 200,
+            withPayload: false,
+          });
+          return ents.map((e) => e.entityKey);
+        } catch (err) {
+          console.warn(`delete-all: query ${type} failed:`, err);
+          return [] as string[];
+        }
+      }),
+    );
+    const keys = perType.flat();
 
     if (keys.length > 0) {
       const wallet = getWalletClient();

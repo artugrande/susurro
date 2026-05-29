@@ -231,12 +231,18 @@ function normalize(e: RawEntity): QueriedEntity {
   };
 }
 
-/** All entities of a type owned by a user, created by our trusted app wallet. */
+/** All entities of a type owned by a user, created by our trusted app wallet.
+ *
+ * Pass `withPayload: false` when you only need entity keys/attributes (e.g.
+ * for bulk delete) — much lighter on the RPC and avoids timeouts on bigger
+ * result sets, since the node doesn't have to fetch the (often large)
+ * encrypted payloads. */
 export async function queryByType(opts: {
   owner: string;
   entityType: string;
   sinceMs?: number;
   limit?: number;
+  withPayload?: boolean;
 }): Promise<QueriedEntity[]> {
   const pub = getPublicClient();
   const filters = [
@@ -249,7 +255,7 @@ export async function queryByType(opts: {
   let q = pub
     .buildQuery()
     .where(filters)
-    .withPayload(true)
+    .withPayload(opts.withPayload ?? true)
     .withAttributes(true)
     .limit(opts.limit ?? 50);
 
