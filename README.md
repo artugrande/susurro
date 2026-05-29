@@ -70,7 +70,16 @@ En [la demo en vivo](https://susurro-nine.vercel.app) (necesitás una wallet tip
 | `coach-insight` | cifrado (observaciones) | 1 año |
 | `subscription` | público (plan) | 30 días |
 
-Todas las entidades llevan un `PROJECT_ATTRIBUTE` único para aislar los datos en la base compartida de Arkiv.
+Todas las entidades llevan un `PROJECT_ATTRIBUTE` único (`susurro-punatech26-aq7x9k`) para aislar los datos en la base compartida de Arkiv.
+
+**Enfoque técnico (cómo usamos Arkiv como capa de datos, no como un blob):**
+
+- **Atributos tipados como índice.** Filtramos y ordenamos por atributos, nunca por payload. Los numéricos (`mood`, `value`, `created`, `dayOfWeek`, `expiresAt`) van como números para permitir queries de rango.
+- **Query combinada.** El coach lee con `project` + `entityType` + `owner` + `created > X` (ej. mood de los últimos 7 días) — no por entity key.
+- **Expiración diferenciada con lógica de producto.** Cada tipo tiene su `expiresIn` (mood 90d, journal 1a, grant = duración elegida, etc.); el grant que se vence solo es el corazón del control de acceso.
+- **Relaciones por atributos compartidos.** `sessionId` liga journal ↔ access-log de una misma sesión; `grantee` liga el grant con el coach; `relatedTo` liga insights con su entrada.
+- **Trust on-chain.** Todas las entidades las crea la app wallet (`$creator` inmutable); las lecturas filtran por `.createdBy()` para rechazar data inyectada.
+- **Privacidad.** El contenido sensible va cifrado en el payload (AES-256-GCM con llave derivada de la firma del usuario); solo los atributos no sensibles quedan públicos como índice.
 
 ---
 
