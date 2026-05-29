@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { jsonToPayload } from "@arkiv-network/sdk/utils";
-import { getWalletClient, PROJECT_ATTRIBUTE } from "@/lib/arkiv";
+import { getWalletClient, PROJECT_ATTRIBUTE, withWalletLock } from "@/lib/arkiv";
 import { ALLOWED_ENTITY_TYPES } from "@/lib/entities";
 
 export const runtime = "nodejs";
@@ -58,9 +58,9 @@ export async function POST(req: Request) {
     });
 
     const wallet = getWalletClient();
-    const result = (await wallet.mutateEntities({ creates })) as {
-      txHash?: string;
-    };
+    const result = (await withWalletLock(() =>
+      wallet.mutateEntities({ creates }),
+    )) as { txHash?: string };
 
     return NextResponse.json({
       ok: true,

@@ -60,3 +60,19 @@ export function getWalletClient() {
 /** The app wallet address that creates all entities (the trusted $creator). */
 export const APP_WALLET_ADDRESS = process.env
   .NEXT_PUBLIC_ARKIV_APP_ADDRESS as `0x${string}` | undefined;
+
+/**
+ * Serialize all writes through the app wallet. Concurrent writes (e.g. the
+ * agent firing save_mood + save_journal + access-log close together) would
+ * reuse the same transaction nonce and fail with a 500. This queue runs them
+ * one at a time. Errors don't break the chain.
+ */
+let writeChain: Promise<unknown> = Promise.resolve();
+export function withWalletLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = writeChain.then(fn, fn);
+  writeChain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getWalletClient, EntityType } from "@/lib/arkiv";
+import { getWalletClient, EntityType, withWalletLock } from "@/lib/arkiv";
 import { queryByType } from "@/lib/entities";
 
 export const runtime = "nodejs";
@@ -31,9 +31,11 @@ export async function POST(req: Request) {
 
     if (keys.length > 0) {
       const wallet = getWalletClient();
-      await wallet.mutateEntities({
-        deletes: keys.map((k) => ({ entityKey: k as `0x${string}` })),
-      });
+      await withWalletLock(() =>
+        wallet.mutateEntities({
+          deletes: keys.map((k) => ({ entityKey: k as `0x${string}` })),
+        }),
+      );
     }
 
     return NextResponse.json({ ok: true, deleted: keys.length });

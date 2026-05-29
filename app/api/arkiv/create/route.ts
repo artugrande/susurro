@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { jsonToPayload } from "@arkiv-network/sdk/utils";
-import { getWalletClient, PROJECT_ATTRIBUTE } from "@/lib/arkiv";
+import { getWalletClient, PROJECT_ATTRIBUTE, withWalletLock } from "@/lib/arkiv";
 import { ALLOWED_ENTITY_TYPES } from "@/lib/entities";
 
 // Needs the private key + SDK — must run on Node, not the edge runtime.
@@ -54,12 +54,14 @@ export async function POST(req: Request) {
     }
 
     const wallet = getWalletClient();
-    const { entityKey, txHash } = await wallet.createEntity({
-      payload: jsonToPayload(payload ?? {}),
-      contentType: "application/json",
-      attributes: attributes as { key: string; value: string | number }[],
-      expiresIn: exp,
-    });
+    const { entityKey, txHash } = await withWalletLock(() =>
+      wallet.createEntity({
+        payload: jsonToPayload(payload ?? {}),
+        contentType: "application/json",
+        attributes: attributes as { key: string; value: string | number }[],
+        expiresIn: exp,
+      }),
+    );
 
     return NextResponse.json({ entityKey, txHash });
   } catch (err) {

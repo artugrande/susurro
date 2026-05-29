@@ -9,7 +9,6 @@ import {
 } from "react";
 import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi";
 import { deriveEncryptionKey, KEY_DERIVATION_MESSAGE } from "@/lib/crypto";
-import { DEMO_OWNER, DEMO_KEY_SEED } from "@/lib/demo";
 
 interface SessionState {
   address?: string;
@@ -23,10 +22,6 @@ interface SessionState {
   unlock: () => Promise<void>;
   unlocking: boolean;
   connecting: boolean;
-  /** Demo mode: explore a pre-populated account with no wallet. */
-  demoMode: boolean;
-  enterDemo: () => Promise<void>;
-  exitDemo: () => void;
 }
 
 const SessionContext = createContext<SessionState | null>(null);
@@ -38,8 +33,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const { signMessageAsync } = useSignMessage();
   const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null);
   const [unlocking, setUnlocking] = useState(false);
-  const [demoMode, setDemoMode] = useState(false);
-  const [demoKey, setDemoKey] = useState<CryptoKey | null>(null);
 
   const doConnect = useCallback(() => {
     const connector = connectors[0];
@@ -63,35 +56,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [isConnected, signMessageAsync]);
 
-  const enterDemo = useCallback(async () => {
-    const key = await deriveEncryptionKey(DEMO_KEY_SEED);
-    setDemoKey(key);
-    setDemoMode(true);
-  }, []);
-
-  const exitDemo = useCallback(() => {
-    setDemoMode(false);
-    setDemoKey(null);
-  }, []);
-
-  const effectiveAddress = demoMode ? DEMO_OWNER : address;
-  const effectiveKey = demoMode ? demoKey : encryptionKey;
-
   return (
     <SessionContext.Provider
       value={{
-        address: effectiveAddress,
-        isConnected: demoMode ? true : isConnected,
-        isUnlocked: !!effectiveKey,
-        encryptionKey: effectiveKey,
+        address,
+        isConnected,
+        isUnlocked: !!encryptionKey,
+        encryptionKey,
         connect: doConnect,
         disconnect: doDisconnect,
         unlock,
         unlocking,
         connecting,
-        demoMode,
-        enterDemo,
-        exitDemo,
       }}
     >
       {children}

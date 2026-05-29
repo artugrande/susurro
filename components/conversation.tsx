@@ -64,16 +64,26 @@ export function Conversation() {
       ? "speaking"
       : "listening";
 
-  // 3-minute countdown; auto-ends the session at zero.
+  // 3-minute countdown; auto-ends the session once at zero.
   const [remaining, setRemaining] = useState(MAX_SECONDS);
   const startedAtRef = useRef(0);
+  const endedRef = useRef(false);
   useEffect(() => {
     if (!isConnected) return;
+    endedRef.current = false;
     const id = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startedAtRef.current) / 1000);
       const left = Math.max(0, MAX_SECONDS - elapsed);
       setRemaining(left);
-      if (left <= 0) conversation.endSession();
+      if (left <= 0 && !endedRef.current) {
+        endedRef.current = true;
+        try {
+          conversation.endSession();
+        } catch {
+          /* ignore */
+        }
+        clearInterval(id);
+      }
     }, 250);
     return () => clearInterval(id);
   }, [isConnected, conversation]);
@@ -90,9 +100,23 @@ export function Conversation() {
 
     const note = (name: string) => setLastTool(name);
 
+    // Wrap every tool so a transient write error never throws back to the
+    // agent (which would surface a scary "Client tool execution failed" banner
+    // and disrupt the session). It logs, stays graceful, and the chat continues.
+    const run =
+      (name: string, fn: (p: ToolParams) => Promise<string>) =>
+      async (p: ToolParams): Promise<string> => {
+        note(name);
+        try {
+          return await fn(p);
+        } catch (e) {
+          console.error(`tool ${name} failed:`, e);
+          return "Tuve un problema técnico al guardar eso, pero seguimos hablando.";
+        }
+      };
+
     return {
-      save_mood: async (p: ToolParams) => {
-        note("guardando ánimo");
+      save_mood: run("guardando ánimo", async (p) => {
         await saveMoodCheckin({
           owner,
           value: Number(p.value),
@@ -101,9 +125,8 @@ export function Conversation() {
           key,
         });
         return "Listo, guardé tu registro de ánimo cifrado en Arkiv.";
-      },
-      save_journal: async (p: ToolParams) => {
-        note("guardando en el diario");
+      }),
+      save_journal: run("guardando en el diario", async (p) => {
         await saveJournalEntry({
           owner,
           text: String(p.text ?? ""),
@@ -113,9 +136,8 @@ export function Conversation() {
           key,
         });
         return "Guardé esa entrada en tu diario, cifrada.";
-      },
-      request_access: async (p: ToolParams) => {
-        note("pidiendo acceso");
+      }),
+      request_access: run("pidiendo acceso", async (p) => {
         const scopes = String(p.scope ?? "mood-checkin")
           .split(",")
           .map((s) => s.trim())
@@ -128,9 +150,8 @@ export function Conversation() {
           durationSeconds: hours * 3600,
         });
         return `Acceso otorgado por ${hours} hora(s) a: ${scopes.join(", ")}.`;
-      },
-      recall_mood: async (p: ToolParams) => {
-        note("consultando ánimo");
+      }),
+      recall_mood: run("consultando ánimo", async (p) => {
         const grant = await findActiveGrant(owner, "mood-checkin");
         if (!grant)
           return "No tengo acceso a tus registros de ánimo. Pedile permiso al usuario con request_access.";
@@ -153,9 +174,8 @@ export function Conversation() {
           .map((m) => `${m.value}/10${m.note ? ` (${m.note})` : ""}`)
           .join("; ");
         return `${moods.length} registros, promedio ${avg}/10. ${detail}`;
-      },
-      recall_journal: async (p: ToolParams) => {
-        note("consultando diario");
+      }),
+      recall_journal: run("consultando diario", async (p) => {
         const grant = await findActiveGrant(owner, "journal-entry");
         if (!grant)
           return "No tengo acceso a tu diario. Pedile permiso al usuario con request_access.";
@@ -174,7 +194,7 @@ export function Conversation() {
           .slice(0, 5)
           .map((j) => `(${j.mood}/10) ${j.text}`)
           .join(" || ");
-      },
+      }),
     };
   }, [address, encryptionKey, sessionId]);
 
@@ -195,7 +215,12 @@ export function Conversation() {
   }, [conversation, buildClientTools]);
 
   const stop = useCallback(() => {
-    conversation.endSession();
+    endedRef.current = true;
+    try {
+      conversation.endSession();
+    } catch {
+      /* ignore */
+    }
     setLastTool(null);
   }, [conversation]);
 
@@ -232,11 +257,18 @@ export function Conversation() {
           </svg>
         )}
         <PresenceBlob state={orbState} className="h-48 w-48" />
+        {!isConnected && (
+          <button
+            onClick={start}
+            aria-label="Empezar a hablar con Luna"
+            className="absolute inset-0 rounded-full"
+          />
+        )}
       </div>
 
       <p className="text-sm text-muted">
         {!isConnected
-          ? "Tocá para empezar tu check-in de 3 minutos"
+          ? "Tocá la esfera para empezar tu check-in de 3 minutos"
           : stableSpeaking
             ? "Luna está hablando…"
             : "Luna te escucha…"}
@@ -292,7 +324,7 @@ export function Conversation() {
           onClick={stop}
           className="inline-flex items-center justify-center rounded-full border border-sand/30 px-7 py-3 text-sm text-sand transition-colors hover:bg-sand/10"
         >
-          Terminar
+          Terminar conversación
         </button>
       )}
 
