@@ -4,6 +4,24 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { PresenceBlob } from "@/components/presence-blob";
+import { MoodTimeline } from "@/components/mood-timeline";
+import { ThreadsView } from "@/components/threads-view";
+import type { MyEntry } from "@/lib/read";
+
+const DAY = 86_400_000;
+// Sample data (the Salta-dev story) to render the real product components live.
+const SAMPLE_ENTRIES: MyEntry[] = [
+  { entityKey: "s1", type: "mood", mood: 7, summary: "proyecto nuevo en el laburo", tags: ["trabajo", "energía"], created: Date.now() - 12 * DAY },
+  { entityKey: "s2", type: "mood", mood: 8, summary: "mi perro Matías me sacó una sonrisa", tags: ["mascota"], created: Date.now() - 11 * DAY },
+  { entityKey: "s3", type: "mood", mood: 2, summary: "perdió Boca, bajón", tags: ["boca", "deporte", "tristeza"], created: Date.now() - 10 * DAY },
+  { entityKey: "s4", type: "mood", mood: 4, summary: "lunes pesado", tags: ["trabajo", "cansancio"], created: Date.now() - 9 * DAY },
+  { entityKey: "s5", type: "mood", mood: 7, summary: "salí a correr, me despejó", tags: ["ejercicio"], created: Date.now() - 8 * DAY },
+  { entityKey: "s6", type: "mood", mood: 3, summary: "bug en producción", tags: ["trabajo", "estrés"], created: Date.now() - 7 * DAY },
+  { entityKey: "s7", type: "mood", mood: 8, summary: "lo resolví, me felicitaron", tags: ["trabajo", "logro"], created: Date.now() - 6 * DAY },
+  { entityKey: "s8", type: "mood", mood: 9, summary: "asado con amigos", tags: ["amigos"], created: Date.now() - 3 * DAY },
+  { entityKey: "s9", type: "mood", mood: 5, summary: "ansioso por la demo", tags: ["trabajo", "ansiedad"], created: Date.now() - 1 * DAY },
+  { entityKey: "s10", type: "mood", mood: 6, summary: "con ganas de mostrar lo que construí", tags: ["trabajo"], created: Date.now() },
+];
 
 /* ---------- slide building blocks ---------- */
 
@@ -187,6 +205,99 @@ const slides: ReactNode[] = [
       <Bullet>Ves tu data, borrás registros uno por uno o todo de una.</Bullet>
     </ul>
   </Slide>,
+
+  // Product — conversation
+  <div
+    key="prod-convo"
+    className="mx-auto flex h-full w-full max-w-3xl flex-col justify-center"
+  >
+    <p className="mb-2 text-xs uppercase tracking-[0.2em] text-sand/70">
+      El producto
+    </p>
+    <h2 className="mb-6 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+      Hablás con Luna, una coach con voz.
+    </h2>
+    <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-8">
+      <div className="relative flex h-44 w-44 shrink-0 items-center justify-center">
+        <svg
+          viewBox="0 0 240 240"
+          className="pointer-events-none absolute inset-0 -rotate-90"
+        >
+          <circle cx="120" cy="120" r="112" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+          <circle
+            cx="120"
+            cy="120"
+            r="112"
+            fill="none"
+            stroke="#cbb99d"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray={2 * Math.PI * 112}
+            strokeDashoffset={2 * Math.PI * 112 * 0.25}
+          />
+        </svg>
+        <PresenceBlob state="speaking" className="h-36 w-36" />
+      </div>
+      <div className="w-full space-y-3">
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+          <span className="text-[0.6rem] uppercase tracking-wider text-muted">
+            vos
+          </span>
+          <p className="text-sm text-foreground/90">
+            Hoy ando un cuatro… perdió Boca y me bajoneó.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+          <span className="text-[0.6rem] uppercase tracking-wider text-muted">
+            luna
+          </span>
+          <p className="text-sm text-sand">
+            Te escucho. Lo anoto. ¿Querés que hablemos de eso un toque?
+          </p>
+        </div>
+        <p className="text-center font-mono text-xs text-sand">
+          2:45 restantes · check-in de 3 min
+        </p>
+      </div>
+    </div>
+    <p className="mt-6 text-sm text-muted">
+      Voz natural (ElevenLabs). Lo que registrás se cifra en tu navegador y se
+      guarda en Arkiv.
+    </p>
+  </div>,
+
+  // Product — dashboard
+  <div
+    key="prod-dash"
+    className="mx-auto flex h-full w-full max-w-3xl flex-col justify-center"
+  >
+    <p className="mb-2 text-xs uppercase tracking-[0.2em] text-sand/70">
+      El producto
+    </p>
+    <h2 className="mb-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+      Tu semana, cifrada y tuya.
+    </h2>
+    <MoodTimeline entries={SAMPLE_ENTRIES} />
+    <div className="mt-4 grid gap-6 sm:grid-cols-2">
+      <ThreadsView entries={SAMPLE_ENTRIES} />
+      <div>
+        <div className="mb-2 flex items-center gap-1.5 text-[0.65rem] text-muted">
+          Recomendaciones · generado con
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/vercellogo.png" alt="Vercel" className="h-3 w-auto" /> AI
+          Gateway
+        </div>
+        <ul className="space-y-2 text-sm">
+          <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
+            Planeá algo que te cope para después de los partidos de Boca.
+          </li>
+          <li className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-foreground/90">
+            Anotate en más hackathons: esa energía te sienta de diez.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>,
 
   // 3 — How it works
   <Slide key="how" kicker="Cómo funciona" title="Voz que entiende, memoria que es tuya.">
