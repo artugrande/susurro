@@ -4,21 +4,27 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
-import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi";
+import { usePrivy, useWallets, useSignMessage } from "@privy-io/react-auth";
 import { deriveEncryptionKey, KEY_DERIVATION_MESSAGE } from "@/lib/crypto";
 
 interface SessionState {
   address?: string;
+  /** Email the user logged in with, if any (friendlier than an address). */
+  email?: string;
+  /** Privy finished initializing (auth state is known). */
+  ready: boolean;
   isConnected: boolean;
   /** True once the user signed and we derived their encryption key. */
   isUnlocked: boolean;
   encryptionKey: CryptoKey | null;
+  /** Open the Privy login modal (email → auto-created embedded wallet). */
   connect: () => void;
   disconnect: () => void;
-  /** Prompt the wallet to sign; derive and hold the AES key in memory. */
+  /** Sign the key-derivation message; derive and hold the AES key in memory. */
   unlock: () => Promise<void>;
   unlocking: boolean;
   connecting: boolean;
@@ -27,39 +33,51 @@ interface SessionState {
 const SessionContext = createContext<SessionState | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const { address, isConnected } = useAccount();
-  const { connect, connectors, isPending: connecting } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { signMessageAsync } = useSignMessage();
+  const { ready, authenticated, user, login, logout } = usePrivy();
+  const { wallets } = useWallets();
+  const { signMessage } = useSignMessage();
   const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null);
   const [unlocking, setUnlocking] = useState(false);
 
+  // Prefer the Privy embedded wallet; fall back to any connected wallet.
+  const wallet = useMemo(
+    () => wallets.find((w) => w.walletClientType === "privy") ?? wallets[0],
+    [wallets],
+  );
+  const address = wallet?.address;
+  const email = user?.email?.address;
+  const isConnected = authenticated && !!address;
+
   const doConnect = useCallback(() => {
-    const connector = connectors[0];
-    if (connector) connect({ connector });
-  }, [connect, connectors]);
+    login();
+  }, [login]);
 
   const doDisconnect = useCallback(() => {
     setEncryptionKey(null);
-    disconnect();
-  }, [disconnect]);
+    void logout();
+  }, [logout]);
 
   const unlock = useCallback(async () => {
-    if (!isConnected) return;
+    if (!address) return;
     setUnlocking(true);
     try {
-      const sig = await signMessageAsync({ message: KEY_DERIVATION_MESSAGE });
-      const key = await deriveEncryptionKey(sig);
+      const { signature } = await signMessage(
+        { message: KEY_DERIVATION_MESSAGE },
+        { address },
+      );
+      const key = await deriveEncryptionKey(signature);
       setEncryptionKey(key);
     } finally {
       setUnlocking(false);
     }
-  }, [isConnected, signMessageAsync]);
+  }, [address, signMessage]);
 
   return (
     <SessionContext.Provider
       value={{
         address,
+        email,
+        ready,
         isConnected,
         isUnlocked: !!encryptionKey,
         encryptionKey,
@@ -67,7 +85,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         disconnect: doDisconnect,
         unlock,
         unlocking,
-        connecting,
+        connecting: !ready,
       }}
     >
       {children}

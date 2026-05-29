@@ -11,21 +11,21 @@ function short(addr?: string) {
 const primary =
   "inline-flex items-center justify-center rounded-full bg-sand px-7 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-sand/90 disabled:opacity-60";
 
-function WalletPill({
-  address,
+function AccountPill({
+  label,
   onClick,
 }: {
-  address?: string;
+  label: string;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      title="Desconectar wallet"
+      title="Cerrar sesión"
       className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-charcoal transition-colors hover:bg-white/90"
     >
       <Wallet className="h-4 w-4" />
-      {short(address)}
+      {label}
     </button>
   );
 }
@@ -33,25 +33,28 @@ function WalletPill({
 export function ConnectButton() {
   const [mounted, setMounted] = useState(false);
   const {
+    ready,
     isConnected,
     isUnlocked,
     address,
+    email,
     connect,
     disconnect,
     unlock,
     unlocking,
-    connecting,
   } = useSession();
 
   useEffect(() => setMounted(true), []);
 
-  // Avoid SSR/client hydration mismatch — wallet state is client-only.
+  // Avoid SSR/client hydration mismatch — auth state is client-only.
   if (!mounted) return <div className="h-12" aria-hidden />;
+
+  const pillLabel = email ?? short(address);
 
   if (!isConnected) {
     return (
-      <button onClick={connect} disabled={connecting} className={primary}>
-        {connecting ? "Conectando…" : "Conectar wallet"}
+      <button onClick={connect} disabled={!ready} className={primary}>
+        {!ready ? "Cargando…" : "Ingresá con tu email"}
       </button>
     );
   }
@@ -60,12 +63,12 @@ export function ConnectButton() {
     return (
       <div className="flex flex-col items-center gap-3">
         <button onClick={unlock} disabled={unlocking} className={primary}>
-          {unlocking ? "Firmá en tu wallet…" : "Empezá a hablar con Luna"}
+          {unlocking ? "Cifrando tu espacio…" : "Empezá a hablar con Luna"}
         </button>
-        <WalletPill address={address} onClick={disconnect} />
+        <AccountPill label={pillLabel} onClick={disconnect} />
       </div>
     );
   }
 
-  return <WalletPill address={address} onClick={disconnect} />;
+  return <AccountPill label={pillLabel} onClick={disconnect} />;
 }
