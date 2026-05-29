@@ -145,7 +145,6 @@ pnpm dlx tsx -r dotenv/config scripts/validate-entities.ts dotenv_config_path=.e
 
 ## Privacidad y límites
 
-- **Datos sintéticos en el demo.** El demo usa datos generados, no reales.
 - **No reemplaza atención profesional.** Susurro es un compañero de journaling, no un terapeuta. Ante una crisis, el coach deriva a líneas de ayuda (en Argentina, **135**).
 
 ---
