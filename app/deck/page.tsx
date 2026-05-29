@@ -270,26 +270,20 @@ const slides: ReactNode[] = [
     <h2 className="mb-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
       Tu semana, cifrada y tuya.
     </h2>
-    <div className="mb-4 grid grid-cols-3 gap-3 text-center">
-      <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-4">
-        <div className="flex items-center justify-center gap-1.5 text-2xl font-semibold text-sand">
-          <Flame className="h-5 w-5" />
-          {SAMPLE_STATS.streak}
-        </div>
-        <div className="mt-0.5 text-xs text-muted">días seguidos</div>
-      </div>
-      <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-4">
-        <div className="text-2xl font-semibold text-foreground">
-          {SAMPLE_STATS.total}
-        </div>
-        <div className="mt-0.5 text-xs text-muted">registros</div>
-      </div>
-      <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-4">
-        <div className="text-2xl font-semibold text-foreground">
-          {SAMPLE_STATS.todayDone ? "✓" : "—"}
-        </div>
-        <div className="mt-0.5 text-xs text-muted">hoy</div>
-      </div>
+    <div className="mb-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm">
+      <span className="inline-flex items-center gap-1.5 font-semibold text-sand">
+        <Flame className="h-4 w-4" />
+        {SAMPLE_STATS.streak}
+        <span className="font-normal text-muted">días seguidos</span>
+      </span>
+      <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+        {SAMPLE_STATS.total}
+        <span className="font-normal text-muted">registros</span>
+      </span>
+      <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+        {SAMPLE_STATS.todayDone ? "✓" : "—"}
+        <span className="font-normal text-muted">hoy</span>
+      </span>
     </div>
     <MoodTimeline entries={SAMPLE_ENTRIES} />
     <div className="mt-4 grid gap-6 sm:grid-cols-2">
