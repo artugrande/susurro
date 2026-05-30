@@ -10,6 +10,7 @@ Proyecto para el track **Arkiv × Puna Tech 2026** (Aplicaciones de IA sobre Ark
 - **Track:** Arkiv Network — IA + datos verificables
 - **Demo en vivo:** https://susurro-nine.vercel.app
 - **Video:** [demo en YouTube](https://www.youtube.com/watch?v=7JWos7N7RuA)
+- **Verificable on-chain:** [tx de ejemplo en Arkiv (Braga)](https://explorer.braga.hoodi.arkiv.network/tx/0x13140bf280d8f179f1815f6ffc7de43ee486f9e4eb40af726d4b076f0a943b8d) — `mutateEntities` desde nuestra [app wallet `0xDC19…D9A6`](https://explorer.braga.hoodi.arkiv.network/address/0xDC1991c2D8329716346E3a6c28a35382966AD9A6) (todas las escrituras del producto)
 
 ---
 
