@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
 import { buildRecommendationContext } from "@/lib/stats";
+import { useT, useLocale } from "@/lib/i18n";
 import type { MyEntry } from "@/lib/read";
 
 export function Recommendations({ entries }: { entries: MyEntry[] }) {
+  const t = useT();
+  const locale = useLocale();
   const context = buildRecommendationContext(entries);
   const [items, setItems] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -22,7 +25,7 @@ export function Recommendations({ entries }: { entries: MyEntry[] }) {
     fetch("/api/recommendations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ context }),
+      body: JSON.stringify({ context, locale }),
     })
       .then((r) => r.json())
       .then((d) => {
@@ -37,7 +40,7 @@ export function Recommendations({ entries }: { entries: MyEntry[] }) {
     return () => {
       cancelled = true;
     };
-  }, [context]);
+  }, [context, locale]);
 
   if (!context) return null;
 
@@ -53,24 +56,21 @@ export function Recommendations({ entries }: { entries: MyEntry[] }) {
   return (
     <div className="w-full">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="text-sm font-medium text-foreground">Para esta semana</h3>
+        <h3 className="text-sm font-medium text-foreground">
+          {t("recs.heading")}
+        </h3>
         <span className="inline-flex items-center gap-1.5 text-[0.6rem] text-muted">
-          generado con
+          {t("recs.generatedWith")}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/vercellogo.png" alt="Vercel" className="h-3 w-auto" />
           AI Gateway
         </span>
       </div>
 
-      {loading && (
-        <p className="text-sm text-muted">Pensando recomendaciones para vos…</p>
-      )}
+      {loading && <p className="text-sm text-muted">{t("recs.thinking")}</p>}
 
       {!loading && items.length > 0 && (
-        <p className="mb-2 text-[0.6rem] text-muted/70">
-          No reemplaza ayuda profesional. Si la estás pasando mal, en Argentina
-          llamá al 135.
-        </p>
+        <p className="mb-2 text-[0.6rem] text-muted/70">{t("recs.crisis")}</p>
       )}
 
       {!loading && (
@@ -83,7 +83,7 @@ export function Recommendations({ entries }: { entries: MyEntry[] }) {
               >
                 <button
                   onClick={() => toggleDone(i)}
-                  aria-label="Marcar como hecho"
+                  aria-label={t("recs.markDone")}
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
                     done.has(i)
                       ? "border-emerald-400 bg-emerald-400/20 text-emerald-300"
@@ -105,8 +105,8 @@ export function Recommendations({ entries }: { entries: MyEntry[] }) {
                   onClick={() =>
                     setDismissed((prev) => new Set(prev).add(i))
                   }
-                  aria-label="Descartar"
-                  title="Descartar"
+                  aria-label={t("recs.dismiss")}
+                  title={t("recs.dismiss")}
                   className="shrink-0 text-muted transition-colors hover:text-red-400"
                 >
                   <X className="h-4 w-4" />

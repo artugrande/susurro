@@ -8,6 +8,8 @@ interface ConfirmDialogProps {
   description: string;
   confirmLabel: string;
   cancelLabel?: string;
+  /** Label shown on the confirm button while `loading` is true. */
+  loadingLabel?: string;
   danger?: boolean;
   loading?: boolean;
   onConfirm: () => void;
@@ -20,6 +22,7 @@ export function ConfirmDialog({
   description,
   confirmLabel,
   cancelLabel = "Cancelar",
+  loadingLabel = "…",
   danger,
   loading,
   onConfirm,
@@ -62,7 +65,7 @@ export function ConfirmDialog({
                 : "bg-sand text-charcoal hover:bg-sand/90",
             ].join(" ")}
           >
-            {loading ? "Eliminando…" : confirmLabel}
+            {loading ? loadingLabel : confirmLabel}
           </button>
           <button
             onClick={onCancel}

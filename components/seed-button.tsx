@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/lib/session";
 import { seedDemoData } from "@/lib/seed";
+import { useT, useLocale } from "@/lib/i18n";
 
 type State = "idle" | "loading" | "done" | "error";
 
 export function SeedButton() {
+  const t = useT();
+  const locale = useLocale();
   const { address, encryptionKey } = useSession();
   const qc = useQueryClient();
   const [state, setState] = useState<State>("idle");
@@ -27,6 +30,7 @@ export function SeedButton() {
       const r = await seedDemoData({
         owner: address as string,
         key: encryptionKey as CryptoKey,
+        locale,
       });
       setTxHash(r.txHash ?? null);
       await qc.invalidateQueries({
@@ -39,10 +43,10 @@ export function SeedButton() {
   }
 
   const label: Record<State, string> = {
-    idle: "Cargar una semana de datos de ejemplo",
-    loading: "Cargando datos cifrados…",
-    done: "✓ Datos de ejemplo cargados",
-    error: "Error — reintentar",
+    idle: t("seed.idle"),
+    loading: t("seed.loading"),
+    done: t("seed.done"),
+    error: t("seed.error"),
   };
 
   return (
@@ -61,7 +65,7 @@ export function SeedButton() {
           rel="noopener noreferrer"
           className="text-xs text-sand underline underline-offset-4 hover:text-foreground"
         >
-          Ver la transacción en Arkiv ↗
+          {t("seed.txLink")}
         </a>
       )}
     </div>

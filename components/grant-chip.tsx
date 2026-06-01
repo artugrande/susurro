@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useActiveGrants } from "@/lib/hooks";
 import { revokeGrant } from "@/lib/write";
+import { useT } from "@/lib/i18n";
 
 function formatRemaining(ms: number): string {
   if (ms <= 0) return "0s";
@@ -16,22 +17,23 @@ function formatRemaining(ms: number): string {
   return `${sec}s`;
 }
 
-const SCOPE_LABEL: Record<string, string> = {
-  "mood-checkin": "Ánimo",
-  "journal-entry": "Diario",
-  "coach-insight": "Observaciones",
-};
-
 export function GrantChip({ owner }: { owner: string }) {
+  const t = useT();
   const { data: grants } = useActiveGrants(owner);
   const qc = useQueryClient();
   const [now, setNow] = useState(() => Date.now());
   const [revoking, setRevoking] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
+    const tid = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(tid);
   }, []);
+
+  const SCOPE_LABEL: Record<string, string> = {
+    "mood-checkin": t("grant.scopeMood"),
+    "journal-entry": t("grant.scopeJournal"),
+    "coach-insight": t("grant.scopeInsight"),
+  };
 
   const active = (grants ?? []).filter(
     (g) => Number(g.attributes.expiresAt ?? 0) > now,
@@ -64,10 +66,11 @@ export function GrantChip({ owner }: { owner: string }) {
           >
             <div className="flex items-center justify-center gap-2 text-sm font-medium text-sand">
               <span className="h-2 w-2 animate-pulse rounded-full bg-sand" />
-              Acceso ABIERTO
+              {t("grant.open")}
             </div>
             <p className="mt-1 text-xs text-muted">
-              Susurro puede leer: {scopes.join(" · ")}
+              {t("grant.canRead")}
+              {scopes.join(" · ")}
             </p>
             <p className="mt-2 font-mono text-lg text-foreground">
               ⏱ {formatRemaining(remaining)}
@@ -77,7 +80,7 @@ export function GrantChip({ owner }: { owner: string }) {
               disabled={revoking === g.entityKey}
               className="mt-3 inline-flex items-center justify-center rounded-full bg-red-500/90 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-60"
             >
-              {revoking === g.entityKey ? "Cortando…" : "🔴 Cortar acceso ahora"}
+              {revoking === g.entityKey ? t("grant.cutting") : t("grant.cutNow")}
             </button>
           </div>
         );

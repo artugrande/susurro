@@ -6,38 +6,48 @@ import { ConversationProvider } from "@elevenlabs/react";
 import { Toaster } from "sonner";
 import { useState, type ReactNode } from "react";
 import { SessionProvider } from "@/lib/session";
+import { LocaleProvider, useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "";
 
-export function Providers({ children }: { children: ReactNode }) {
+/** Inner tree that depends on the active locale (Privy modal copy + everything below). */
+function LocalizedTree({ children }: { children: ReactNode }) {
+  const { locale, t } = useI18n();
   const [queryClient] = useState(() => new QueryClient());
 
   return (
+    // key={locale} remounts the Privy SDK on language change so its config
+    // (login modal headline / message) re-renders in the new locale.
+    // Privy's auth state persists outside React, so the remount is silent.
     <PrivyProvider
+      key={locale}
       appId={PRIVY_APP_ID}
       config={{
-        // Email-first onboarding — no browser extension or seed phrase needed.
         loginMethods: ["email"],
         appearance: {
           theme: "#1a1817",
           accentColor: "#cbb99d",
           logo: "/logosusurro.svg",
-          landingHeader: "Entrá a Susurro",
-          loginMessage: "Tu espacio privado y cifrado.",
+          landingHeader: locale === "en" ? "Sign in to Susurro" : "Entrá a Susurro",
+          loginMessage:
+            locale === "en"
+              ? "Your private, encrypted space."
+              : "Tu espacio privado y cifrado.",
           showWalletLoginFirst: false,
         },
         embeddedWallets: {
-          // Auto-create a self-custodial wallet for every new user.
           ethereum: { createOnLogin: "users-without-wallets" },
-          // Sign seamlessly (no extra confirm modal) — the unlock button is the
-          // explicit consent moment.
           showWalletUIs: false,
         },
       }}
     >
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
-          <ConversationProvider>{children}</ConversationProvider>
+          <ConversationProvider>
+            <LanguageSwitcher />
+            {children}
+          </ConversationProvider>
         </SessionProvider>
         <Toaster
           theme="dark"
@@ -49,8 +59,19 @@ export function Providers({ children }: { children: ReactNode }) {
               color: "#ede7dd",
             },
           }}
+          // Wrap the toast text in the active locale via aria — toasts here
+          // are already produced by components that read useT().
+          aria-label={t("lang.ariaLabel")}
         />
       </QueryClientProvider>
     </PrivyProvider>
+  );
+}
+
+export function Providers({ children }: { children: ReactNode }) {
+  return (
+    <LocaleProvider>
+      <LocalizedTree>{children}</LocalizedTree>
+    </LocaleProvider>
   );
 }

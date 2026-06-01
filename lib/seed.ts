@@ -2,20 +2,22 @@
 
 /**
  * Seeds synthetic demo data (encrypted with the user's key) so the dashboard
- * shows a real 2-week streak with ups and downs. SYNTHETIC DATA ONLY —
- * an everyday person navigating a partner, family, friends, their dog,
- * loneliness, work and small joys. Kept universal so anyone relates to it.
+ * shows a real one-week arc. SYNTHETIC DATA ONLY — an everyday person
+ * navigating a partner, family, friends, a pet, loneliness, work and small
+ * joys. Kept universal so anyone relates to it. Bilingual (ES/EN).
  */
 import { encryptJSON } from "@/lib/crypto";
 import { PROJECT_ATTRIBUTE, EntityType } from "@/lib/arkiv";
 import { Attr, Expiry } from "@/lib/entities";
+import type { Locale } from "@/lib/i18n";
 
 const DAY = 86_400_000;
 
-// daysAgo 6 → 0 (today). Consecutive days → a full-week streak.
-// A believable arc: okay start → a rough patch (a fight, a sick pet) →
-// gradual recovery. Moods move gently day to day, not in a zigzag.
-const MOOD_DAYS: { daysAgo: number; value: number; note: string; tags: string[] }[] = [
+type MoodSeed = { daysAgo: number; value: number; note: string; tags: string[] };
+type JournalSeed = { daysAgo: number; mood: number; text: string; tags: string[] };
+
+// daysAgo 6 → 0 (today). 7 consecutive days → a one-week streak.
+const MOOD_DAYS_ES: MoodSeed[] = [
   { daysAgo: 6, value: 6, note: "tuve una charla larga con mi vieja, de esas que hacía rato no teníamos", tags: ["familia", "vínculos"] },
   { daysAgo: 5, value: 3, note: "discutí con mi pareja por una pavada y quedamos los dos mal", tags: ["pareja", "discusión"] },
   { daysAgo: 4, value: 4, note: "quedó tenso en casa y encima dormí mal", tags: ["pareja", "sueño"] },
@@ -25,7 +27,17 @@ const MOOD_DAYS: { daysAgo: number; value: number; note: string; tags: string[] 
   { daysAgo: 0, value: 7, note: "más en paz, arranqué el día con un mate y música, tranqui", tags: ["descanso", "calma"] },
 ];
 
-const JOURNALS: { daysAgo: number; mood: number; text: string; tags: string[] }[] = [
+const MOOD_DAYS_EN: MoodSeed[] = [
+  { daysAgo: 6, value: 6, note: "had a long talk with my mom, the kind we hadn't had in a while", tags: ["family", "bonds"] },
+  { daysAgo: 5, value: 3, note: "got into a fight with my partner over something small and we both ended up off", tags: ["partner", "argument"] },
+  { daysAgo: 4, value: 4, note: "things stayed tense at home and on top of that I slept badly", tags: ["partner", "sleep"] },
+  { daysAgo: 3, value: 5, note: "a bit low, but I took the dog for a walk and it eased a little", tags: ["pet", "loneliness"] },
+  { daysAgo: 2, value: 7, note: "talked it through with my partner and started to unblock", tags: ["partner", "reconciliation"] },
+  { daysAgo: 1, value: 8, note: "dinner with friends at home, I laughed until my stomach hurt", tags: ["friends", "joy"] },
+  { daysAgo: 0, value: 7, note: "more at peace, started the day with tea and music, calm", tags: ["rest", "calm"] },
+];
+
+const JOURNALS_ES: JournalSeed[] = [
   {
     daysAgo: 5,
     mood: 3,
@@ -40,6 +52,21 @@ const JOURNALS: { daysAgo: number; mood: number; text: string; tags: string[] }[
   },
 ];
 
+const JOURNALS_EN: JournalSeed[] = [
+  {
+    daysAgo: 5,
+    mood: 3,
+    text: "Got into a fight with my partner over something tiny and we both ended up hurt. I hate how a small thing escalates so fast. I kept thinking I sometimes react from tiredness, not from what I actually feel.",
+    tags: ["partner", "argument"],
+  },
+  {
+    daysAgo: 1,
+    mood: 8,
+    text: "Dinner with friends at home. Hadn't laughed like that in weeks. Being around people who knew me from before — people I don't have to explain anything to or pretend in front of — really helps.",
+    tags: ["friends", "belonging"],
+  },
+];
+
 interface SeedItem {
   entityType: string;
   attributes: { key: string; value: string | number }[];
@@ -50,8 +77,13 @@ interface SeedItem {
 export async function seedDemoData(params: {
   owner: string;
   key: CryptoKey;
+  /** Which locale's text to seed. Defaults to Spanish. */
+  locale?: Locale;
 }): Promise<{ ok: boolean; count: number; txHash?: string }> {
   const owner = params.owner.toLowerCase();
+  const locale: Locale = params.locale ?? "es";
+  const MOOD_DAYS = locale === "en" ? MOOD_DAYS_EN : MOOD_DAYS_ES;
+  const JOURNALS = locale === "en" ? JOURNALS_EN : JOURNALS_ES;
   const items: SeedItem[] = [];
 
   for (const d of MOOD_DAYS) {

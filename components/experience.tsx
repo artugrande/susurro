@@ -6,20 +6,20 @@ import { Conversation } from "@/components/conversation";
 import { GrantChip } from "@/components/grant-chip";
 import { MyData } from "@/components/my-data";
 import { SeedButton } from "@/components/seed-button";
+import { useT } from "@/lib/i18n";
 
 export function Experience() {
+  const t = useT();
   const { isUnlocked, address } = useSession();
 
   if (!isUnlocked || !address) {
     return (
       <div className="flex flex-col items-center gap-6 animate-[floatIn_0.6s_ease-out]">
         <p className="max-w-xl text-pretty text-lg leading-relaxed text-sand">
-          Un compañero de IA con voz que te escucha. Lo que le contás vive
-          cifrado y es tuyo — no de una plataforma.
+          {t("experience.tagline1")}
         </p>
         <p className="max-w-md text-pretty text-sm leading-relaxed text-muted">
-          Tu memoria de conversaciones vive en Arkiv. Le das acceso por el
-          tiempo que vos quieras, y lo cortás cuando quieras.
+          {t("experience.tagline2")}
         </p>
         <ConnectButton />
       </div>

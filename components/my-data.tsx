@@ -9,6 +9,7 @@ import { useMyEntries } from "@/lib/hooks";
 import { deleteEntity, deleteAllData } from "@/lib/write";
 import { EntityType, APP_WALLET_ADDRESS } from "@/lib/arkiv";
 import { computeStats } from "@/lib/stats";
+import { useT } from "@/lib/i18n";
 import type { MyEntry } from "@/lib/read";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { MoodTimeline } from "@/components/mood-timeline";
@@ -17,6 +18,7 @@ import { ThreadsView } from "@/components/threads-view";
 import { Recommendations } from "@/components/recommendations";
 
 export function MyData({ owner }: { owner: string }) {
+  const t = useT();
   const { encryptionKey } = useSession();
   const { data: entries } = useMyEntries(owner, encryptionKey);
   const qc = useQueryClient();
@@ -37,10 +39,10 @@ export function MyData({ owner }: { owner: string }) {
         entityType: e.type === "mood" ? EntityType.Mood : EntityType.Journal,
       });
       setHidden((prev) => new Set(prev).add(e.entityKey));
-      toast.success("Registro eliminado de Arkiv");
+      toast.success(t("mydata.toastRowDeleted"));
       await qc.invalidateQueries({ queryKey: ["myentries", owner.toLowerCase()] });
     } catch {
-      toast.error("No se pudo eliminar. Reintentá.");
+      toast.error(t("mydata.toastRowDeleteFail"));
     } finally {
       setBusy(null);
     }
@@ -53,14 +55,17 @@ export function MyData({ owner }: { owner: string }) {
       setHidden(new Set((entries ?? []).map((e) => e.entityKey)));
       toast.success(
         deleted > 0
-          ? `Eliminé todo: ${deleted} registro(s) y accesos`
-          : "No quedaba nada para eliminar",
+          ? t("mydata.toastAllDeleted", {
+              n: deleted,
+              label: deleted === 1 ? t("mydata.entryOne") : t("mydata.entryMany"),
+            })
+          : t("mydata.toastAllNothing"),
       );
       await qc.invalidateQueries({ queryKey: ["myentries", owner.toLowerCase()] });
       await qc.invalidateQueries({ queryKey: ["grants", owner.toLowerCase()] });
       setConfirmOpen(false);
     } catch {
-      toast.error("No se pudo eliminar todo. Reintentá.");
+      toast.error(t("mydata.toastAllFail"));
     } finally {
       setWiping(false);
     }
@@ -76,20 +81,20 @@ export function MyData({ owner }: { owner: string }) {
               {stats.streak}
             </div>
             <div className="text-[0.65rem] text-muted">
-              {stats.streak === 1 ? "día seguido" : "días seguidos"}
+              {stats.streak === 1 ? t("stats.dayInRow") : t("stats.daysInRow")}
             </div>
           </div>
           <div className="rounded-xl border border-white/10 bg-white/5 px-2 py-3">
             <div className="text-lg font-semibold text-foreground">
               {stats.total}
             </div>
-            <div className="text-[0.65rem] text-muted">registros</div>
+            <div className="text-[0.65rem] text-muted">{t("stats.entries")}</div>
           </div>
           <div className="rounded-xl border border-white/10 bg-white/5 px-2 py-3">
             <div className="text-lg font-semibold text-foreground">
               {stats.todayDone ? "✓" : "—"}
             </div>
-            <div className="text-[0.65rem] text-muted">hoy</div>
+            <div className="text-[0.65rem] text-muted">{t("stats.today")}</div>
           </div>
         </div>
       )}
@@ -99,24 +104,19 @@ export function MyData({ owner }: { owner: string }) {
       <MoodTimeline entries={list} />
 
       <div>
-        <h2 className="text-sm font-medium text-foreground">Mis registros</h2>
-        <p className="mb-3 text-xs text-muted">
-          Cifrados con tu llave. Solo vos podés leerlos.
-        </p>
+        <h2 className="text-sm font-medium text-foreground">{t("mydata.header")}</h2>
+        <p className="mb-3 text-xs text-muted">{t("mydata.sub")}</p>
 
         {list.length === 0 ? (
-          <p className="text-sm text-muted">
-            Todavía no guardaste nada. Hablá con Luna y lo que registres aparece
-            acá.
-          </p>
+          <p className="text-sm text-muted">{t("mydata.empty")}</p>
         ) : (
           <div className="overflow-hidden rounded-2xl border border-white/10">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-white/5 text-xs text-muted">
-                  <th className="px-3 py-2 text-left font-normal">Ánimo</th>
+                  <th className="px-3 py-2 text-left font-normal">{t("mydata.colMood")}</th>
                   <th className="px-3 py-2 text-left font-normal">
-                    Qué compartiste
+                    {t("mydata.colShared")}
                   </th>
                   <th className="px-3 py-2 text-right font-normal"></th>
                 </tr>
@@ -136,16 +136,16 @@ export function MyData({ owner }: { owner: string }) {
                     <td className="px-3 py-2 text-foreground">
                       {e.type === "journal" && <span className="mr-1">📔</span>}
                       {e.summary || (
-                        <span className="text-muted">(sin nota)</span>
+                        <span className="text-muted">{t("mydata.noNote")}</span>
                       )}
                       {e.tags.length > 0 && (
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {e.tags.map((t) => (
+                          {e.tags.map((tg) => (
                             <span
-                              key={t}
+                              key={tg}
                               className="rounded-full border border-sand/20 px-2 py-0.5 text-[0.65rem] text-sand/80"
                             >
-                              {t}
+                              {tg}
                             </span>
                           ))}
                         </div>
@@ -155,8 +155,8 @@ export function MyData({ owner }: { owner: string }) {
                       <button
                         onClick={() => removeOne(e)}
                         disabled={busy === e.entityKey}
-                        title="Eliminar este registro"
-                        aria-label="Eliminar este registro"
+                        title={t("mydata.deleteRow")}
+                        aria-label={t("mydata.deleteRow")}
                         className="inline-flex text-muted transition-colors hover:text-red-400 disabled:opacity-50"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -175,7 +175,7 @@ export function MyData({ owner }: { owner: string }) {
             className="mt-3 inline-flex items-center gap-1.5 text-xs text-red-400 transition-colors hover:text-red-300"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            Eliminar todo y revocar el acceso
+            {t("mydata.deleteAll")}
           </button>
         )}
       </div>
@@ -185,9 +185,7 @@ export function MyData({ owner }: { owner: string }) {
       <Recommendations entries={list} />
 
       <div className="border-t border-white/5 pt-3 text-xs leading-relaxed text-muted">
-        🔒 Cada registro vive cifrado en Arkiv (testnet BRAGA) — solo tu wallet
-        puede descifrarlo. Cada vez que guardás algo, es una transacción real
-        on-chain.{" "}
+        {t("mydata.explorerNote")}
         {APP_WALLET_ADDRESS && (
           <a
             href={`https://explorer.braga.hoodi.arkiv.network/address/${APP_WALLET_ADDRESS}`}
@@ -195,16 +193,18 @@ export function MyData({ owner }: { owner: string }) {
             rel="noopener noreferrer"
             className="text-sand underline underline-offset-4 hover:text-foreground"
           >
-            Ver las transacciones de Susurro en Arkiv ↗
+            {t("mydata.explorerLink")}
           </a>
         )}
       </div>
 
       <ConfirmDialog
         open={confirmOpen}
-        title="¿Eliminar todo?"
-        description="Se borran todos tus registros y se corta cualquier acceso de Susurro. Esta acción no se puede deshacer."
-        confirmLabel="Sí, eliminar todo"
+        title={t("mydata.confirmTitle")}
+        description={t("mydata.confirmDesc")}
+        confirmLabel={t("mydata.confirmYes")}
+        cancelLabel={t("mydata.confirmCancel")}
+        loadingLabel={t("mydata.confirmDeleting")}
         danger
         loading={wiping}
         onConfirm={wipeAll}

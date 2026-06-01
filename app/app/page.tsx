@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { Experience } from "@/components/experience";
+import { useT } from "@/lib/i18n";
 
 export default function AppPage() {
+  const t = useT();
   return (
     <main className="relative flex min-h-dvh flex-col items-center px-6 text-center">
       {/* warm radial glow (fixed background) */}
@@ -30,9 +34,9 @@ export default function AppPage() {
 
       <footer className="w-full py-6">
         <p className="text-xs text-muted/80">
-          Susurro, no reemplaza a un terapeuta profesional ·{" "}
+          {t("footer.disclaimer")} ·{" "}
           <Link href="/" className="underline underline-offset-2 hover:text-sand">
-            inicio
+            {t("footer.home")}
           </Link>
         </p>
       </footer>

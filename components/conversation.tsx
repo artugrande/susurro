@@ -13,6 +13,8 @@ import {
 } from "@/lib/write";
 import { getDecryptedMood, getDecryptedJournal } from "@/lib/read";
 import { COACH_ADDRESS, findActiveGrant } from "@/lib/coach";
+import { useT, useLocale } from "@/lib/i18n";
+import { LUNA_AGENT_OVERRIDE } from "@/lib/luna-prompt";
 import type { EntityScope } from "@/lib/entities";
 
 const AGENT_ID = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID as string;
@@ -21,6 +23,8 @@ const MAX_SECONDS = 180; // 3-minute check-in
 type ToolParams = Record<string, unknown>;
 
 export function Conversation() {
+  const t = useT();
+  const locale = useLocale();
   const { address, encryptionKey, isUnlocked } = useSession();
   const [sessionId] = useState(() => crypto.randomUUID());
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +44,7 @@ export function Conversation() {
       const text = props?.message;
       if (!text) return;
       const role: "user" | "ai" = props.source === "user" ? "user" : "ai";
-      setTranscript((t) => [...t, { id: msgIdRef.current++, role, text }]);
+      setTranscript((tr) => [...tr, { id: msgIdRef.current++, role, text }]);
     },
   });
 
@@ -48,17 +52,14 @@ export function Conversation() {
   const isConnected = status === "connected";
   const isSpeaking = conversation.isSpeaking;
 
-  // Debounce speaking -> listening so the label/orb don't flicker during the
-  // tiny pauses Luna takes mid-sentence. Switch to speaking instantly; only
-  // drop back to listening after ~1.2s of continuous silence.
   const [stableSpeaking, setStableSpeaking] = useState(false);
   useEffect(() => {
     if (isSpeaking) {
       setStableSpeaking(true);
       return;
     }
-    const t = setTimeout(() => setStableSpeaking(false), 1200);
-    return () => clearTimeout(t);
+    const tid = setTimeout(() => setStableSpeaking(false), 1200);
+    return () => clearTimeout(tid);
   }, [isSpeaking]);
 
   const orbState: "idle" | "listening" | "speaking" = !isConnected
@@ -67,7 +68,6 @@ export function Conversation() {
       ? "speaking"
       : "listening";
 
-  // 3-minute countdown; auto-ends the session once at zero.
   const [remaining, setRemaining] = useState(MAX_SECONDS);
   const startedAtRef = useRef(0);
   const endedRef = useRef(false);
@@ -107,9 +107,6 @@ export function Conversation() {
 
     const note = (name: string) => setLastTool(name);
 
-    // Wrap every tool so a transient write error never throws back to the
-    // agent (which would surface a scary "Client tool execution failed" banner
-    // and disrupt the session). It logs, stays graceful, and the chat continues.
     const run =
       (name: string, fn: (p: ToolParams) => Promise<string>) =>
       async (p: ToolParams): Promise<string> => {
@@ -118,12 +115,12 @@ export function Conversation() {
           return await fn(p);
         } catch (e) {
           console.error(`tool ${name} failed:`, e);
-          return "Tuve un problema técnico al guardar eso, pero seguimos hablando.";
+          return t("conv.toolError");
         }
       };
 
     return {
-      save_mood: run("guardando ánimo", async (p) => {
+      save_mood: run(t("conv.toolNoteSavingMood"), async (p) => {
         await saveMoodCheckin({
           owner,
           value: Number(p.value),
@@ -131,9 +128,9 @@ export function Conversation() {
           tags: typeof p.tags === "string" ? p.tags : undefined,
           key,
         });
-        return "Listo, guardé tu registro de ánimo cifrado en Arkiv.";
+        return t("conv.toolMoodOk");
       }),
-      save_journal: run("guardando en el diario", async (p) => {
+      save_journal: run(t("conv.toolNoteSavingJournal"), async (p) => {
         await saveJournalEntry({
           owner,
           text: String(p.text ?? ""),
@@ -142,9 +139,9 @@ export function Conversation() {
           sessionId,
           key,
         });
-        return "Guardé esa entrada en tu diario, cifrada.";
+        return t("conv.toolJournalOk");
       }),
-      request_access: run("pidiendo acceso", async (p) => {
+      request_access: run(t("conv.toolNoteAsking"), async (p) => {
         const scopes = String(p.scope ?? "mood-checkin")
           .split(",")
           .map((s) => s.trim())
@@ -156,23 +153,22 @@ export function Conversation() {
           scope: scopes,
           durationSeconds: hours * 3600,
         });
-        return `Acceso otorgado por ${hours} hora(s) a: ${scopes.join(", ")}.`;
+        return t("conv.toolGrantOk", { hours, scopes: scopes.join(", ") });
       }),
-      recall_mood: run("consultando ánimo", async (p) => {
+      recall_mood: run(t("conv.toolNoteRecallMood"), async (p) => {
         const grant = await findActiveGrant(owner, "mood-checkin");
-        if (!grant)
-          return "No tengo acceso a tus registros de ánimo. Pedile permiso al usuario con request_access.";
+        if (!grant) return t("conv.toolNoAccessMood");
         const days = Number(p.days ?? 7) || 7;
         const moods = await getDecryptedMood(owner, days, key);
         await writeAccessLog({
           owner,
           grantee: COACH_ADDRESS,
           action: "recall_mood",
-          description: `leyó ${moods.length} registros de ánimo de ${days} días`,
+          description: `read ${moods.length} mood logs over ${days} days`,
           entitiesRead: [],
           sessionId,
         });
-        if (!moods.length) return "No hay registros de ánimo en ese período.";
+        if (!moods.length) return t("conv.toolNoMoods");
         const avg = (
           moods.reduce((a, m) => a + m.value, 0) / moods.length
         ).toFixed(1);
@@ -180,30 +176,29 @@ export function Conversation() {
           .slice(0, 6)
           .map((m) => `${m.value}/10${m.note ? ` (${m.note})` : ""}`)
           .join("; ");
-        return `${moods.length} registros, promedio ${avg}/10. ${detail}`;
+        return `${moods.length} ${moods.length === 1 ? "log" : "logs"}, avg ${avg}/10. ${detail}`;
       }),
-      recall_journal: run("consultando diario", async (p) => {
+      recall_journal: run(t("conv.toolNoteRecallJournal"), async (p) => {
         const grant = await findActiveGrant(owner, "journal-entry");
-        if (!grant)
-          return "No tengo acceso a tu diario. Pedile permiso al usuario con request_access.";
+        if (!grant) return t("conv.toolNoAccessJournal");
         const days = Number(p.days ?? 14) || 14;
         const entries = await getDecryptedJournal(owner, days, key);
         await writeAccessLog({
           owner,
           grantee: COACH_ADDRESS,
           action: "recall_journal",
-          description: `leyó ${entries.length} entradas de diario`,
+          description: `read ${entries.length} journal entries`,
           entitiesRead: [],
           sessionId,
         });
-        if (!entries.length) return "No hay entradas de diario en ese período.";
+        if (!entries.length) return t("conv.toolNoJournals");
         return entries
           .slice(0, 5)
           .map((j) => `(${j.mood}/10) ${j.text}`)
           .join(" || ");
       }),
     };
-  }, [address, encryptionKey, sessionId]);
+  }, [address, encryptionKey, sessionId, t]);
 
   const start = useCallback(() => {
     setError(null);
@@ -216,14 +211,25 @@ export function Conversation() {
         agentId: AGENT_ID,
         connectionType: "webrtc",
         clientTools: buildClientTools(),
+        // Switch Luna's voice agent to the active locale: language + a fresh
+        // prompt + first message. Requires `language`, `prompt` and
+        // `first_message` to be allowed in the ElevenLabs agent's
+        // Security → Overrides config (we enable them via API in
+        // scripts/configure-agent.mjs).
+        overrides: {
+          agent: {
+            language: locale,
+            prompt: { prompt: LUNA_AGENT_OVERRIDE[locale].prompt },
+            firstMessage: LUNA_AGENT_OVERRIDE[locale].firstMessage,
+          },
+        },
       });
     } catch (e) {
       setStarting(false);
       setError(String(e));
     }
-  }, [conversation, buildClientTools]);
+  }, [conversation, buildClientTools, locale]);
 
-  // First tap shows a short welcome/privacy modal; after that, start directly.
   const requestStart = useCallback(() => {
     if (welcomeSeen) start();
     else setWelcomeOpen(true);
@@ -281,7 +287,7 @@ export function Conversation() {
         {!isConnected && (
           <button
             onClick={requestStart}
-            aria-label="Empezar a hablar con Luna"
+            aria-label={t("conv.startBtnAria")}
             className="absolute inset-0 rounded-full"
           />
         )}
@@ -290,17 +296,17 @@ export function Conversation() {
       <p className="text-sm text-muted">
         {isConnected
           ? stableSpeaking
-            ? "Luna está hablando…"
-            : "Luna te escucha…"
+            ? t("conv.lunaSpeaking")
+            : t("conv.lunaListening")
           : starting
-            ? "Conectando con Luna…"
-            : "Tocá la esfera para empezar tu check-in de 3 minutos"}
+            ? t("conv.connecting")
+            : t("conv.tapToStart")}
       </p>
 
       {isConnected && (
         <p className="font-mono text-xs text-sand">
           {Math.floor(remaining / 60)}:
-          {String(remaining % 60).padStart(2, "0")} restantes
+          {String(remaining % 60).padStart(2, "0")} {t("conv.remaining")}
         </p>
       )}
 
@@ -318,7 +324,9 @@ export function Conversation() {
           {transcript.slice(-8).map((m) => (
             <div key={m.id} className="animate-[fadeInUp_0.4s_ease-out]">
               <span className="text-[0.6rem] uppercase tracking-wider text-muted">
-                {m.role === "user" ? "vos" : "susurro"}
+                {m.role === "user"
+                  ? t("conv.transcriptYou")
+                  : t("conv.transcriptSusurro")}
               </span>
               <p
                 className={
@@ -341,14 +349,14 @@ export function Conversation() {
           className="inline-flex items-center justify-center gap-2 rounded-full bg-sand px-7 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-sand/90 disabled:opacity-60"
         >
           <Mic className="h-4 w-4" />
-          {starting ? "Conectando…" : "Hablar con Luna"}
+          {starting ? t("conv.connectingShort") : t("conv.talkWithLuna")}
         </button>
       ) : (
         <button
           onClick={stop}
           className="inline-flex items-center justify-center rounded-full border border-sand/30 px-7 py-3 text-sm text-sand transition-colors hover:bg-sand/10"
         >
-          Terminar conversación
+          {t("conv.endConversation")}
         </button>
       )}
 
@@ -366,28 +374,26 @@ export function Conversation() {
           />
           <div className="relative w-full max-w-sm rounded-3xl border border-sand/20 bg-charcoal p-6 text-center shadow-2xl animate-[popIn_0.18s_ease-out]">
             <h3 className="text-lg font-semibold text-foreground">
-              Hola, soy Luna 🌙
+              {t("conv.welcomeTitle")}
             </h3>
             <ul className="mt-4 space-y-3 text-left text-sm text-muted">
+              <li>{t("conv.welcome1")}</li>
               <li>
-                Soy tu compañera para pensar en voz alta — no reemplazo a un
-                terapeuta.
+                {t("conv.welcome2Pre")}
+                <span className="text-sand">{t("conv.welcome2Accent")}</span>
+                {t("conv.welcome2Post")}
               </li>
               <li>
-                Todo lo que hablemos se guarda{" "}
-                <span className="text-sand">cifrado con tu llave</span>. Solo vos
-                podés leerlo.
-              </li>
-              <li>
-                El check-in dura <span className="text-sand">3 minutos</span>.
-                Cortás cuando quieras.
+                {t("conv.welcome3Pre")}
+                <span className="text-sand">{t("conv.welcome3Accent")}</span>
+                {t("conv.welcome3Post")}
               </li>
             </ul>
             <button
               onClick={confirmWelcome}
               className="mt-6 w-full rounded-full bg-sand px-6 py-3 text-sm font-medium text-charcoal transition-colors hover:bg-sand/90"
             >
-              Empezar a hablar
+              {t("conv.welcomeCta")}
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT, useLocale } from "@/lib/i18n";
 import type { MyEntry } from "@/lib/read";
 
 const DAY = 86_400_000;
@@ -16,6 +17,8 @@ export function MoodTimeline({
   entries: MyEntry[];
   days?: number;
 }) {
+  const t = useT();
+  const locale = useLocale();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -36,7 +39,10 @@ export function MoodTimeline({
       : null;
     return {
       avg,
-      label: new Date(start).toLocaleDateString("es-AR", { weekday: "short" }),
+      label: new Date(start).toLocaleDateString(
+        locale === "en" ? "en-US" : "es-AR",
+        { weekday: "short" },
+      ),
     };
   });
 
@@ -69,9 +75,11 @@ export function MoodTimeline({
   return (
     <div className="mb-4 rounded-2xl border border-white/10 bg-black/20 p-4">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-foreground">Tu ánimo</h3>
+        <h3 className="text-sm font-medium text-foreground">
+          {t("timeline.heading")}
+        </h3>
         <span className="rounded-full border border-sand/25 px-2.5 py-0.5 text-[0.65rem] text-muted">
-          últimos {days} días
+          {t("timeline.lastNDays", { n: days })}
         </span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" aria-hidden>

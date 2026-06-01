@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Wallet, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "@/lib/session";
+import { useT } from "@/lib/i18n";
 
 function short(addr?: string) {
   return addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : "";
@@ -15,14 +16,16 @@ const primary =
 function AccountPill({
   label,
   onClick,
+  title,
 }: {
   label: string;
   onClick: () => void;
+  title: string;
 }) {
   return (
     <button
       onClick={onClick}
-      title="Ver mi cuenta"
+      title={title}
       className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-charcoal transition-colors hover:bg-white/90"
     >
       <Wallet className="h-4 w-4" />
@@ -42,6 +45,7 @@ function AccountModal({
   onClose: () => void;
   onLogout: () => void;
 }) {
+  const t = useT();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -65,14 +69,13 @@ function AccountModal({
           <ShieldCheck className="h-5 w-5" />
         </div>
         <h3 className="mt-4 text-lg font-semibold text-foreground">
-          Estás conectado a esta cuenta
+          {t("account.title")}
         </h3>
         {email && (
           <p className="mt-1 text-sm font-medium text-foreground">{email}</p>
         )}
         <p className="mt-3 text-sm leading-relaxed text-muted">
-          Tu espacio está cifrado y solo vos podés leerlo. Tu wallet es
-          self-custodial — la creaste vos, no una plataforma.
+          {t("account.body")}
         </p>
         {address && (
           <p className="mt-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 font-mono text-xs text-muted">
@@ -84,13 +87,13 @@ function AccountModal({
             onClick={onLogout}
             className="inline-flex items-center justify-center rounded-full bg-red-500/90 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-red-500"
           >
-            Cerrar sesión
+            {t("account.signOut")}
           </button>
           <button
             onClick={onClose}
             className="inline-flex items-center justify-center rounded-full px-6 py-2 text-sm text-muted transition-colors hover:text-foreground"
           >
-            Seguir conectado
+            {t("account.stay")}
           </button>
         </div>
       </div>
@@ -99,6 +102,7 @@ function AccountModal({
 }
 
 export function ConnectButton() {
+  const t = useT();
   const [mounted, setMounted] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const {
@@ -123,7 +127,7 @@ export function ConnectButton() {
   function handleLogout() {
     setAccountOpen(false);
     disconnect();
-    toast.success("Te deslogueaste correctamente.");
+    toast.success(t("account.signedOutToast"));
   }
 
   const modal = accountOpen ? (
@@ -138,7 +142,7 @@ export function ConnectButton() {
   if (!isConnected) {
     return (
       <button onClick={connect} disabled={!ready} className={primary}>
-        {!ready ? "Cargando…" : "Ingresá con tu email"}
+        {!ready ? t("auth.loading") : t("auth.signIn")}
       </button>
     );
   }
@@ -147,9 +151,13 @@ export function ConnectButton() {
     return (
       <div className="flex flex-col items-center gap-3">
         <button onClick={unlock} disabled={unlocking} className={primary}>
-          {unlocking ? "Cifrando tu espacio…" : "Empezá a hablar con Luna"}
+          {unlocking ? t("auth.encrypting") : t("auth.startTalking")}
         </button>
-        <AccountPill label={pillLabel} onClick={() => setAccountOpen(true)} />
+        <AccountPill
+          label={pillLabel}
+          onClick={() => setAccountOpen(true)}
+          title={t("auth.pillTooltip")}
+        />
         {modal}
       </div>
     );
@@ -157,7 +165,11 @@ export function ConnectButton() {
 
   return (
     <>
-      <AccountPill label={pillLabel} onClick={() => setAccountOpen(true)} />
+      <AccountPill
+        label={pillLabel}
+        onClick={() => setAccountOpen(true)}
+        title={t("auth.pillTooltip")}
+      />
       {modal}
     </>
   );

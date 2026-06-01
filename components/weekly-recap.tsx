@@ -3,11 +3,18 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Play, Pause, Loader2 } from "lucide-react";
-import { buildWeeklyRecap } from "@/lib/stats";
+import { buildWeeklyRecap, type RecapI18n } from "@/lib/stats";
+import { useT, useLocale } from "@/lib/i18n";
 import type { MyEntry } from "@/lib/read";
 
 export function WeeklyRecap({ entries }: { entries: MyEntry[] }) {
-  const recap = buildWeeklyRecap(entries);
+  const t = useT();
+  const locale = useLocale();
+  // Cast: useT()'s key type is narrower than the generic string `t` recap uses.
+  const recap = buildWeeklyRecap(entries, {
+    t: t as unknown as RecapI18n["t"],
+    locale,
+  });
   const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -33,7 +40,7 @@ export function WeeklyRecap({ entries }: { entries: MyEntry[] }) {
       await audio.play();
       setPlaying(true);
     } catch {
-      toast.error("No pude generar el audio. Reintentá.");
+      toast.error(t("recap.audioError"));
     } finally {
       setLoading(false);
     }
@@ -43,7 +50,7 @@ export function WeeklyRecap({ entries }: { entries: MyEntry[] }) {
     <div className="w-full rounded-2xl border border-sand/20 bg-sand/5 p-4">
       <div className="mb-2 flex items-center justify-between gap-3">
         <h3 className="text-sm font-medium text-foreground">
-          Resumen de tu semana
+          {t("recap.heading")}
         </h3>
         <button
           onClick={toggle}
@@ -57,12 +64,16 @@ export function WeeklyRecap({ entries }: { entries: MyEntry[] }) {
           ) : (
             <Play className="h-3.5 w-3.5" />
           )}
-          {loading ? "Generando…" : playing ? "Pausar" : "Reproducir"}
+          {loading
+            ? t("recap.generating")
+            : playing
+              ? t("recap.pause")
+              : t("recap.play")}
         </button>
       </div>
       <p className="text-sm leading-relaxed text-foreground/90">{recap.text}</p>
       {recap.hasData && (
-        <p className="mt-2 text-[0.65rem] text-muted">Resumen en audio · voz IA</p>
+        <p className="mt-2 text-[0.65rem] text-muted">{t("recap.audioNote")}</p>
       )}
     </div>
   );

@@ -74,18 +74,37 @@ export interface WeeklyRecap {
   text: string;
 }
 
-/** Build a warm, data-driven Spanish recap of the last 7 days (no LLM). */
-export function buildWeeklyRecap(entries: MyEntry[]): WeeklyRecap {
+/** i18n shape buildWeeklyRecap accepts so it can render in ES or EN. */
+export interface RecapI18n {
+  t: (key: string, vars?: Record<string, string | number>) => string;
+  locale: "es" | "en";
+}
+
+/** Build a warm, data-driven recap of the last 7 days (no LLM), localized. */
+export function buildWeeklyRecap(
+  entries: MyEntry[],
+  i18n?: RecapI18n,
+): WeeklyRecap {
+  // Translate via passed `t`. Without an i18n arg, fall back to a Spanish
+  // template so any existing caller stays working.
+  const t =
+    i18n?.t ??
+    ((k: string, _vars?: Record<string, string | number>) => {
+      // Minimal ES fallback (kept simple — the live app always passes i18n).
+      const FALLBACK: Record<string, string> = {
+        "recap.empty":
+          "Todavía no hay registros esta semana. Hacé un check-in conmigo y te armo tu resumen.",
+      };
+      return FALLBACK[k] ?? "";
+    });
+
   const since = Date.now() - 7 * DAY;
   const week = entries
     .filter((e) => e.created >= since)
     .sort((a, b) => a.created - b.created);
 
   if (week.length === 0) {
-    return {
-      hasData: false,
-      text: "Todavía no hay registros esta semana. Hacé un check-in conmigo y te armo tu resumen.",
-    };
+    return { hasData: false, text: t("recap.empty") };
   }
 
   const moods = week.filter((e) => e.mood > 0).map((e) => e.mood);
@@ -101,38 +120,41 @@ export function buildWeeklyRecap(entries: MyEntry[]): WeeklyRecap {
     const secondAvg =
       moods.slice(mid).reduce((a, b) => a + b, 0) / (moods.length - mid);
     const diff = secondAvg - firstAvg;
-    if (diff > 0.8) trend = " Venís de menos a más: el cierre de semana te encontró mejor.";
-    else if (diff < -0.8) trend = " La semana se fue poniendo más cuesta arriba hacia el final.";
-    else trend = " Te mantuviste bastante estable.";
+    if (diff > 0.8) trend = t("recap.trendUp");
+    else if (diff < -0.8) trend = t("recap.trendDown");
+    else trend = t("recap.trendFlat");
   }
 
   // Top tags this week.
   const tagCounts = new Map<string, number>();
   for (const e of week) {
     for (const raw of e.tags ?? []) {
-      const t = raw.trim().toLowerCase();
-      if (t) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+      const tg = raw.trim().toLowerCase();
+      if (tg) tagCounts.set(tg, (tagCounts.get(tg) ?? 0) + 1);
     }
   }
   const topTags = [...tagCounts.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
-    .map(([t]) => t);
+    .map(([tg]) => tg);
 
   const tagsLine = topTags.length
-    ? ` Lo que más apareció: ${topTags.join(", ")}.`
+    ? t("recap.topTags", { tags: topTags.join(", ") })
     : "";
 
   const avgLine = moods.length
-    ? ` Tu ánimo promedió ${avg.toFixed(1)} sobre 10.`
+    ? t("recap.avgLine", { avg: avg.toFixed(1) })
     : "";
 
+  const moments =
+    week.length === 1 ? t("recap.momentOne") : t("recap.momentMany");
+
   const text =
-    `Esta semana registraste ${week.length} ${week.length === 1 ? "momento" : "momentos"}.` +
+    t("recap.thisWeekN", { n: week.length, label: moments }) +
     avgLine +
     trend +
     tagsLine +
-    " Gracias por hacerte este espacio.";
+    t("recap.thanks");
 
   return { hasData: true, text };
 }
